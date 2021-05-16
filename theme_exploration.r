@@ -22,13 +22,13 @@ key <- "81a7388709d31bb149eb1cc9c7eba736"
 
 ## All in local time
 
-texas_nuclear_generation <- getEIA(ID = "EBA.TEX-ALL.NG.NUC.HL", key = key)
+texas_nuclear_generation <- getEIA(ID = "EBA.TEX-ALL.NG.NUC.HL", key = key) %>% as.data.frame()
 
-texas_gas_generation <- getEIA(ID ="EBA.TEX-ALL.NG.NG.HL" , key = key)
+texas_gas_generation <- getEIA(ID ="EBA.TEX-ALL.NG.NG.HL" , key = key) %>% as.data.frame()
 
-texas_generation <- getEIA(ID = "EBA.TEX-ALL.NG.HL", key = key)
+texas_generation <- getEIA(ID = "EBA.TEX-ALL.NG.HL", key = key) %>% as.data.frame()
 
-texas_demand <- getEIA(ID = "EBA.TEX-ALL.D.HL", key = key)
+texas_demand <- getEIA(ID = "EBA.TEX-ALL.D.HL", key = key) %>% as.data.frame()
 
 
 
@@ -53,6 +53,30 @@ retrieveDate <- function(x) {
   return (string)
 }
 
+processFrameGeneration <- function(df, type) {
+  #' Readies a generation data frame
+  #' @df : dataframe, input generation data frame
+  #' @type: string, type of power generation (e.g natural gas or nuclear)
+  #' @return: returns a processed data frame
+  
+  oldName <- colnames(df)[1]
+  df %<>% 
+    mutate(date_raw = rownames(df),
+           hour = retrieveHour(date_raw),
+           date = retrieveDate(date_raw),
+           type = type,
+           date = lubridate::ymd(date)) %>% 
+    rename("mWh" = oldName)
+  rownames(df) <- seq(1, nrow(df))
+  return (df)
+}
+
+total_data <- texas_nuclear_generation %>% mutate(date_raw = rownames(texas_nuclear_generation), type = "nuclear") %>% as_tibble() %>% bind_rows(
+  texas_gas_generation %>% mutate(date_raw = rownames(texas_nuclear_generation), type = "gas"
+))
+
+
+total_data %<>%  mutate(date_raw = rownames(total_data))
 
 
 test <- texas_nuclear_generation %>%  
