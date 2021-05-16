@@ -17,26 +17,51 @@ library(lubridate)
 key <- "81a7388709d31bb149eb1cc9c7eba736"
 
 
-
-
-
 ## All in local time
+
+
+## Generation data
 
 texas_nuclear_generation <- getEIA(ID = "EBA.TEX-ALL.NG.NUC.HL", key = key) %>% as.data.frame()
 
 texas_gas_generation <- getEIA(ID ="EBA.TEX-ALL.NG.NG.HL" , key = key) %>% as.data.frame()
 
+texas_wind_generation <- getEIA(ID ="EBA.TEX-ALL.NG.WND.HL" , key = key) %>% as.data.frame()
+
+texas_solar_generation <- getEIA(ID ="EBA.TEX-ALL.NG.SUN.HL" , key = key) %>% as.data.frame()
+
+texas_coal_generation <- getEIA(ID ="EBA.TEX-ALL.NG.COL.HL" , key = key) %>% as.data.frame()
+
+texas_hydro_generation <- getEIA(ID ="EBA.TEX-ALL.NG.WAT.HL" , key = key) %>% as.data.frame()
+
+texas_other_generation <- getEIA(ID ="EBA.TEX-ALL.NG.OTH.HL" , key = key) %>% as.data.frame()
+
 texas_generation <- getEIA(ID = "EBA.TEX-ALL.NG.HL", key = key) %>% as.data.frame()
 
+
+## Demand data
 texas_demand <- getEIA(ID = "EBA.TEX-ALL.D.HL", key = key) %>% as.data.frame()
+
+
+### Weather data:
+# Three stations as of now: Southern rough, Houston, LBJ road
+
+texas_weather <- read.csv("Data/texas_weather.csv") %>%
+  dplyr::select(NAME:TMIN) %>% 
+  rename(station_name = NAME,
+         date = DATE,
+         temp_avg = TAVG,
+         temp_min = TMIN,
+         temp_max = TMAX) %>% 
+  mutate(date = lubridate::ymd(date))
 
 
 
 retrieveHour <- function(x) {
   #'
   #'Function that extracts hour  from date 
-  hour_vec <- x[13:14]
-  return (paste(hour_vec[1], hour_vec[2], ":00", sep = ""))
+  hourVec <- (strsplit(x, split = ""))[[1]][13:14]
+  return (paste(hourVec[1], hourVec[2], ":00", sep = ""))
 }
 
 
@@ -61,22 +86,38 @@ processFrameGeneration <- function(df, type) {
   
   oldName <- colnames(df)[1]
   df %<>% 
-    mutate(date_raw = rownames(df),
-           hour = retrieveHour(date_raw),
-           date = retrieveDate(date_raw),
+    mutate(dateRaw = rownames(df),
+           hour = retrieveHour(dateRaw),
+           date = mapply(retrieveDate, dateRaw),
            type = type,
            date = lubridate::ymd(date)) %>% 
-    rename("mWh" = oldName)
+    rename("mWh" = oldName) %>% 
+    dplyr::select(-dateRaw)
   rownames(df) <- seq(1, nrow(df))
   return (df)
 }
 
-total_data <- texas_nuclear_generation %>% mutate(date_raw = rownames(texas_nuclear_generation), type = "nuclear") %>% as_tibble() %>% bind_rows(
-  texas_gas_generation %>% mutate(date_raw = rownames(texas_nuclear_generation), type = "gas"
+total_generation_data <- processFrameGeneration(texas_nuclear_generation, "nuclear") %>%
+  bind_rows(processFrameGeneration(texas_gas_generation, "gas"),
+            processFrameGeneration(texas_coal_generation, "coal"),
+            processFrameGeneration(texas_solar_generation, "solar"),
+            processFrameGeneration(texas_wind_generation, "wind"),
+            processFrameGeneration(texas_hydro_generation, "hydro"),
+            processFrameGeneration(texas_other_generation, "other"))
+
+
+
+
+save(total_generation_data, file = "Data/power_data.Rdata")
+
+
+
+total_data <- texas_nuclear_generation %>% mutate(dateRaw = rownames(texas_nuclear_generation), type = "nuclear") %>% as_tibble() %>% bind_rows(
+  texas_gas_generation %>% mutate(dateRaw = rownames(texas_nuclear_generation), type = "gas"
 ))
 
 
-total_data %<>%  mutate(date_raw = rownames(total_data))
+total_data %<>%  mutate(dateRaw = rownames(total_data))
 
 
 test <- texas_nuclear_generation %>%  
@@ -84,49 +125,13 @@ test <- texas_nuclear_generation %>%
 
 
 test %<>% 
-  mutate(date_raw = rownames(test),
-         hour = sapply(strsplit(date_raw, split = ""),  function(x) retrieveHour(x)[[1]], simplify=FALSE),
-         date = mapply(retrieveDate, date_raw),
+  mutate(dateRaw = rownames(test),
+         hour = mapply(retrieveHour, dateRaw),
+         date = mapply(retrieveDate, dateRaw),
          date = lubridate::ymd(date))
 
 
 
 
-test["date"] <- rownames(texas_nuclear_generation)
-
-length <- length(strsplit(test$date[1], split = "", fixed = FALSE)[[1]])
-for (i in 2:nrow(test)) {
-  length_temp = length(strsplit(test$date[1], split = "", fixed = FALSE)[[1]])
-  if (length == length_temp) print("TRUE")
-}
 
 
-
-
-dates <- rownames(texas_demand)
-
-texas_demand["date"] <- rownames(lubridate::texas_demand)
-rownames(texas_demand) <- seq(nrow(texas_demand))
-nuclear["date"] <- rownames(nuclear)
-
-nuclear %>% as_tibble()
-
-
-## Save power data
-
-save( file = "Data/power_data.Rdata")
-
-
-
-
-### Weather data:
-# Three stations as of now: Southern rough, Houston, LBJ road
-
-texas_weather <- read.csv("Data/texas_weather.csv") %>%
-  dplyr::select(NAME:TMIN) %>% 
-  rename(station_name = NAME,
-         date = DATE,
-         temp_avg = TAVG,
-         temp_min = TMIN,
-         temp_max = TMAX) %>% 
-  mutate(date = lubridate::ymd(date))
