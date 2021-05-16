@@ -91,26 +91,49 @@ processFrameGeneration <- function(df, type) {
            date = mapply(retrieveDate, dateRaw),
            type = type,
            date = lubridate::ymd(date)) %>% 
-    rename("mWh" = oldName) %>% 
+    rename("mWh_generated" = oldName) %>% 
     dplyr::select(-dateRaw)
   rownames(df) <- seq(1, nrow(df))
   return (df)
 }
 
-total_generation_data <- processFrameGeneration(texas_nuclear_generation, "nuclear") %>%
+generation_data <- processFrameGeneration(texas_nuclear_generation, "nuclear") %>%
   bind_rows(processFrameGeneration(texas_gas_generation, "gas"),
             processFrameGeneration(texas_coal_generation, "coal"),
             processFrameGeneration(texas_solar_generation, "solar"),
             processFrameGeneration(texas_wind_generation, "wind"),
             processFrameGeneration(texas_hydro_generation, "hydro"),
-            processFrameGeneration(texas_other_generation, "other"))
+            processFrameGeneration(texas_other_generation, "other")) 
+
+
+total_generation_data <- 
 
 
 
+texas_demand  %<>%
+  mutate(dateRaw = rownames(texas_demand),
+         hour = retrieveHour(dateRaw),
+         date = mapply(retrieveDate, dateRaw),
+         date = lubridate::ymd(date)) %>% 
+  rename("mWh_demand" = colnames(texas_demand)[1]) %>% 
+  dplyr::select(-dateRaw)
 
-save(total_generation_data, file = "Data/power_data.Rdata")
+rownames(texas_demand) <- seq(1, nrow(texas_demand)) 
 
 
+demand_hour <- texas_demand %>% 
+  group_by(date) %>% 
+  summarise(mWh_demand_per_day = sum(mWh_demand))
+
+
+
+generation_data_hour
+
+
+#save(texas_demand, file = "Data/texas_demand.Rdata)
+#save(total_generation_data, file = "Data/total_generation_data.Rdata")
+load(file = "Data/total_generation_data.Rdata")
+load(file = "Data/texas_demand.Rdata")
 
 total_data <- texas_nuclear_generation %>% mutate(dateRaw = rownames(texas_nuclear_generation), type = "nuclear") %>% as_tibble() %>% bind_rows(
   texas_gas_generation %>% mutate(dateRaw = rownames(texas_nuclear_generation), type = "gas"
