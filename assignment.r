@@ -1,4 +1,9 @@
-############ Data wrangling ############
+################################################################################
+############################ Data wrangling######################################
+################################################################################
+
+## Install x13 binary files if necessary
+#install.packages("seasonal", type = "source") 
 
 
 
@@ -8,9 +13,16 @@ library(fpp3)
 library(tidyverse)
 library(magrittr)
 library(lubridate)
-
+library(x13binary)
+library(seasonal)
 
 #setwd("G:/Dokumenter/Google drive folder/NHH/Master/ENE434/Term assignment/repo")
+
+## Load preassembled Rdata files
+
+load(file = "Data/demand_data.Rdata")
+load(file = "Data/generation_data.Rdata")
+
 
 
 
@@ -87,7 +99,7 @@ processFrameGeneration <- function(df, type) {
   oldName <- colnames(df)[1]
   df %<>% 
     mutate(dateRaw = rownames(df),
-           hour = retrieveHour(dateRaw),
+           hour = mapply(retrieveHour,dateRaw),
            date = mapply(retrieveDate, dateRaw),
            type = type,
            date = lubridate::ymd(date)) %>% 
@@ -97,6 +109,11 @@ processFrameGeneration <- function(df, type) {
   return (df)
 }
 
+
+
+
+## Generation data for all sources
+
 generation_data <- processFrameGeneration(texas_nuclear_generation, "nuclear") %>%
   bind_rows(processFrameGeneration(texas_gas_generation, "gas"),
             processFrameGeneration(texas_coal_generation, "coal"),
@@ -105,53 +122,116 @@ generation_data <- processFrameGeneration(texas_nuclear_generation, "nuclear") %
             processFrameGeneration(texas_hydro_generation, "hydro"),
             processFrameGeneration(texas_other_generation, "other")) 
 
+total_generation_data <- generation_data %>% 
+  group_by(hour, date) %>% 
+  summarise(type = "total",
+            date = date,
+            hour =  hour,
+            mWh_generated = sum(mWh_generated)) %>% 
+  unique()
 
-total_generation_data <- 
+## Bind rows into generation data 
+
+generation_data %<>% bind_rows(total_generation_data)
 
 
 
-texas_demand  %<>%
+## Calculate
+
+demand_data <- texas_demand  %>%
   mutate(dateRaw = rownames(texas_demand),
-         hour = retrieveHour(dateRaw),
+         hour = mapply(retrieveHour,dateRaw),
          date = mapply(retrieveDate, dateRaw),
          date = lubridate::ymd(date)) %>% 
   rename("mWh_demand" = colnames(texas_demand)[1]) %>% 
   dplyr::select(-dateRaw)
 
-rownames(texas_demand) <- seq(1, nrow(texas_demand)) 
+rownames(demand_data) <- seq(1, nrow(demand_data)) 
 
 
-demand_hour <- texas_demand %>% 
+demand_data_daily <- demand_data %>% 
   group_by(date) %>% 
-  summarise(mWh_demand_per_day = sum(mWh_demand))
+  summarise(mWh_demand_daily = sum(mWh_demand))
+
+
+generation_daily <- generation_data %>% 
+  group_by(date, type) %>% 
+  summarise(mWh_generated = sum(mWh_generated),
+            type = type) %>% 
+  unique()
+
+
+save(demand_data, demand_data_daily,  file = "Data/demand_data.Rdata")
+save(generation_data, generation_daily, file = "Data/generation_data.Rdata")
+
+
+### Descriptive statistics ####
 
 
 
-generation_data_hour
+#### Descriptive plots  #### 
 
 
-#save(texas_demand, file = "Data/texas_demand.Rdata)
-#save(total_generation_data, file = "Data/total_generation_data.Rdata")
-load(file = "Data/total_generation_data.Rdata")
-load(file = "Data/texas_demand.Rdata")
-
-total_data <- texas_nuclear_generation %>% mutate(dateRaw = rownames(texas_nuclear_generation), type = "nuclear") %>% as_tibble() %>% bind_rows(
-  texas_gas_generation %>% mutate(dateRaw = rownames(texas_nuclear_generation), type = "gas"
-))
+generation_daily %>%
+  filter(type == "total") %>% 
+  ggplot(aes(x = date, y = mWh_generated)) +
+  geom_point()
+  
+  
 
 
-total_data %<>%  mutate(dateRaw = rownames(total_data))
+
+generation_monthly <- generation_daily %>% 
+  mutate(month = lubridate::month(date),
+         year  = lubridate::year(date)) %>% 
+  group_by(month, year, type) %>% 
+  summarise(mWh_generated = sum(mWh_generated)) %>% 
+  unique() %>% 
+  mutate(date = lubridate::ymd(paste(year, month, "-01"))) %>% 
+  dplyr::select(-year,-month)
+  
+
+demand_data_monthly <- demand_data_daily %>% 
+  mutate(month = lubridate::month(date),
+         year  = lubridate::year(date)) %>% 
+  group_by(month, year) %>% 
+  summarise(mWh_demand_monthly = sum(mWh_demand_daily)) %>% 
+  ungroup() %>% 
+  unique() %>% 
+  mutate(date = lubridate::ymd(paste(year, month, "-01"))) %>% 
+  dplyr::select(-year,-month)
 
 
-test <- texas_nuclear_generation %>%  
-  as.data.frame() 
+## Training data (Monthly)
+generation_total_train <- generation_monthly %>% filter(year(date) < 2019)
 
 
-test %<>% 
-  mutate(dateRaw = rownames(test),
-         hour = mapply(retrieveHour, dateRaw),
-         date = mapply(retrieveDate, dateRaw),
-         date = lubridate::ymd(date))
+# Seasonal decomposition 
+
+
+x13_decomp <- seas(ts(demand_data_monthly %>%  filter(year(date) > 2015) %>%   dplyr::select(mWh_demand_monthly), 
+                    start = c("2016"), 
+                    frequency = 12)) ## Assuming one cold weather season
+
+x13_decomp <- data.frame(x13_decomp) %>% 
+  left_join(demand_data_monthly, by = "date")
+
+x13_decomp %>% ggplot(aes(x = date, y = seasonal)) + geom_line()
+
+
+
+
+
+### 
+
+
+
+
+################################################################################
+############################ Forecasts testing #################################
+################################################################################
+
+## Univariate models
 
 
 
