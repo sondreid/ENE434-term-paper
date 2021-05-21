@@ -209,14 +209,32 @@ generation_total_train <- generation_monthly %>% filter(year(date) < 2019)
 # Seasonal decomposition 
 
 
-x13_decomp <- seas(ts(demand_data_monthly %>%  filter(year(date) > 2015) %>%   dplyr::select(mWh_demand_monthly), 
+x13_decomp <- seas(ts(demand_data_monthly %>%  filter(year(date) > 2015) %>%  dplyr::select(mWh_demand_monthly), 
                     start = c("2016"), 
                     frequency = 12)) ## Assuming one cold weather season
+
+
 
 x13_decomp <- data.frame(x13_decomp) %>% 
   left_join(demand_data_monthly, by = "date")
 
-x13_decomp %>% ggplot(aes(x = date, y = seasonal)) + geom_line()
+
+color_scheme <- c("black", "#EDA63A", "#5093F8") # General color scheme for plots
+
+facet_cols <- c("seasonal", "seasonaladj", "mWh_demand_monthly")
+x13_decomp_pivot <- pivot_longer(x13_decomp, cols = all_of(facet_cols),  names_to = "components", values_to = "demand") %>% 
+  dplyr::select(date, components, demand)
+
+x13_decomp_pivot %>% 
+  ggplot(aes(x = date, y = demand, col = components)) +
+  geom_line() + 
+  facet_grid(rows = vars(components),
+             scales = "free_y")  +
+  scale_colour_manual(values = color_scheme) +
+  labs(title =  "Decomposition plots using X13 SEATS method")
+
+
+x13_decomp %>% ggplot(aes(x = date, y = seasonal)) + geom_line() + labs(x = "Date")
 
 
 
