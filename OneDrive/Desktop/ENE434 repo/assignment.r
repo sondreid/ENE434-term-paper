@@ -158,7 +158,7 @@ rownames(demand_data) <- seq(1, nrow(demand_data))
 
 
 ############################### DAILY ######################
-####################################################
+###########################################################
 
 
 # Compute daily demand
@@ -191,6 +191,8 @@ generation_daily %>%
   geom_point()
   
   
+
+
 
 
 # Monthly generation and demand frames
@@ -252,27 +254,53 @@ x13_decomp %>% ggplot(aes(x = date, y = seasonal)) + geom_line() + labs(x = "Dat
 
 
 
-## Weather decompositon
+######################## Weather model fitting ##################
+#################################################################
 
-x13_decomp_weather <- 
-  seas(ts(texas_weather_avg %>%  dplyr::select(temp_avg), 
-                              start = c("2000"), 
-                              frequency = 12)) ## Assuming one cold weather season
-  
-  
-  
-  
-  %>% dplyr::select(temp_avg) %>% ts(start  = c("2000"),
-                                                     frequency  = 12) %>%  seas() %>% autoplot()
+# Texas before crisis, e.g before 2021 data
+
+texas_weather_bf_crisis <- texas_weather_avg %>% filter(year(date) < 2021) %>% 
+  as_tsibble(index = date)
 
 
-texas_weather_avg %>% dplyr::select(date, temp_avg) %>% 
-  as_tsibble(index = date) %>% 
-  model(x13_weather = X_13ARIMA_SEATS(temp_avg ~ x11()))
+loess_texas_weather <- texas_weather_bf_crisis %>% 
+  mutate(date = as.numeric(date)) %>%  
+  loess(temp_avg~date, data = .,  span = 0.05)
   
 
 
-### 
+pred_loess_weather <- predict(loess_texas_weather)
+
+texas_weather_bf_crisis %<>% 
+  mutate(pred_loess  = pred_loess_weather)
+
+
+texas_weather_bf_crisis %>% 
+  ggplot() +
+  geom_line(aes(x = date, y = temp_avg, col = "observed")) +
+  geom_line(aes(x = date, y = pred_loess, col = "predicted"))
+
+
+resid_vec <- (texas_weather_bf_crisis$temp_avg - texas_weather_bf_crisis$pred_loess)
+training_rmse <- RMSE(.resid = resid_vec)
+
+
+
+## Plots
+
+
+arima <- texas_weather_bf_crisis %>% as_tsibble(index = date) %>% 
+  model(weather_arima = ARIMA(temp_avg,
+                              stepwise = TRUE, 
+                              approximation = TRUE))
+
+
+
+
+
+arima %>% augment() %>% ggplot() + geom_line(aes(date, .fitted, col = "fitted")) + geom_line(aes(date, temp_avg, col = "org"))
+
+
 
 
 
