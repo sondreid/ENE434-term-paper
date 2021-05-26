@@ -17,6 +17,7 @@ library(x13binary)
 library(seasonal)
 
 #setwd("G:/Dokumenter/Google drive folder/NHH/Master/ENE434/Term assignment/repo")
+setwd("C:/Users/sondr/OneDrive/Desktop/ENE434 repo")
 
 ## Load preassembled Rdata files
 
@@ -58,16 +59,23 @@ texas_demand <- getEIA(ID = "EBA.TEX-ALL.D.HL", key = key) %>% as.data.frame()
 ### Weather data:
 # Three stations as of now: Southern rough, Houston, LBJ road
 
+
 texas_weather <- read.csv("Data/texas_weather.csv") %>%
   dplyr::select(NAME:TMIN) %>% 
-  rename(station_name = NAME,
+  rename(station = NAME,
          date = DATE,
          temp_avg = TAVG,
          temp_min = TMIN,
          temp_max = TMAX) %>% 
-  mutate(date = lubridate::ymd(date))
+  mutate(date = lubridate::ymd(date)) %>% 
+  dplyr::select(date, station, temp_avg, temp_min, temp_max)
 
-
+# Compose new dataframe where three station data is averaged
+texas_weather_avg <- texas_weather %>% group_by(date) %>% 
+  filter(!is.na(temp_avg)) %>% 
+  summarise(temp_avg = mean(temp_avg),
+            temp_min = mean(temp_min), 
+            temp_max = mean(temp_max)) 
 
 retrieveHour <- function(x) {
   #'
@@ -150,7 +158,7 @@ rownames(demand_data) <- seq(1, nrow(demand_data))
 
 
 ############################### DAILY ######################
-####################################################
+###########################################################
 
 
 # Compute daily demand
@@ -165,8 +173,6 @@ generation_daily <- generation_data %>%
             type = type) %>% 
   unique()
 
-
-weather_daily <- texas_weather 
 
 save(demand_data, demand_data_daily,  file = "Data/demand_data.Rdata")
 save(generation_data, generation_daily, file = "Data/generation_data.Rdata")
@@ -185,6 +191,8 @@ generation_daily %>%
   geom_point()
   
   
+
+
 
 
 # Monthly generation and demand frames
@@ -246,13 +254,68 @@ x13_decomp %>% ggplot(aes(x = date, y = seasonal)) + geom_line() + labs(x = "Dat
 
 
 
-## Weather decompositon
+######################## Weather model fitting ##################
+#################################################################
 
-texas_weather %>% dplyr::select(temp_avg) %>% ts(., start = "2000", freq) seas() %>% autoplot()
+# Texas before crisis, e.g before 2021 data
+
+texas_weather_bf_crisis <- texas_weather_avg %>% filter(year(date) < 2021) %>% 
+  as_tsibble(index = date)
+
+
+loess_texas_weather <- texas_weather_bf_crisis %>% 
+  mutate(date = as.numeric(date)) %>%  
+  loess(temp_avg~date, data = .,  span = 0.05)
+  
+
+# Loess SD
+loess_texas_weather <- texas_weather_bf_crisis %>% 
+  mutate(date = as.numeric(date)) %>%  
+  msir::loess.sd(x = texas_weather_bf_crisis$date, y = texas_weather_bf_crisis$temp_avg, 
+           span = 0.01, nsigma = 1.96)
+
+
+pred_loess_weather <- predict(loess_texas_weather)
 
 
 
-### 
+texas_weather_bf_crisis %<>% 
+  mutate(pred_loess  = loess_texas_weather$y,
+         upper = loess_texas_weather$upper,
+         lower = loess_texas_weather$lower)
+
+
+texas_weather_bf_crisis %>% 
+  ggplot() +
+  geom_line(aes(x = date, y = temp_avg, col = "observed")) +
+  geom_line(aes(x = date, y = pred_loess, col = "predicted")) +
+  geom_ribbon(aes(x = date, ymin = lower, ymax = upper), fill = "grey") +
+  scale_colour_manual(values = color_scheme) +
+  labs(title = "Loess estimation of weather data")
+
+
+resid_vec <- (texas_weather_bf_crisis$pred_loess- texas_weather_bf_crisis$temp_avg)
+training_rmse <- RMSE(.resid = resid_vec)
+
+
+
+## Evaluating models
+
+## Plots
+
+
+arima <- texas_weather_bf_crisis %>% as_tsibble(index = date) %>% 
+  model(weather_arima = ARIMA(temp_avg,
+                              stepwise = TRUE, 
+                              approximation = TRUE))
+
+
+
+
+
+arima %>% augment() %>% ggplot() + geom_line(aes(date, .fitted, col = "fitted")) + geom_line(aes(date, temp_avg, col = "org"))
+
+
 
 
 
