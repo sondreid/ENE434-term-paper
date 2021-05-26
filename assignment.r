@@ -136,7 +136,7 @@ generation_data %<>% bind_rows(total_generation_data)
 
 
 
-## Calculate
+## Create new data frame for demand 
 
 demand_data <- texas_demand  %>%
   mutate(dateRaw = rownames(texas_demand),
@@ -149,6 +149,11 @@ demand_data <- texas_demand  %>%
 rownames(demand_data) <- seq(1, nrow(demand_data)) 
 
 
+############################### DAILY ######################
+####################################################
+
+
+# Compute daily demand
 demand_data_daily <- demand_data %>% 
   group_by(date) %>% 
   summarise(mWh_demand_daily = sum(mWh_demand))
@@ -160,6 +165,8 @@ generation_daily <- generation_data %>%
             type = type) %>% 
   unique()
 
+
+weather_daily <- texas_weather 
 
 save(demand_data, demand_data_daily,  file = "Data/demand_data.Rdata")
 save(generation_data, generation_daily, file = "Data/generation_data.Rdata")
@@ -180,6 +187,7 @@ generation_daily %>%
   
 
 
+# Monthly generation and demand frames
 
 generation_monthly <- generation_daily %>% 
   mutate(month = lubridate::month(date),
@@ -206,7 +214,7 @@ demand_data_monthly <- demand_data_daily %>%
 generation_total_train <- generation_monthly %>% filter(year(date) < 2019)
 
 
-# Seasonal decomposition 
+# Seasonal decomposition of demand
 
 
 x13_decomp <- seas(ts(demand_data_monthly %>%  filter(year(date) > 2015) %>%  dplyr::select(mWh_demand_monthly), 
@@ -237,6 +245,10 @@ x13_decomp_pivot %>%
 x13_decomp %>% ggplot(aes(x = date, y = seasonal)) + geom_line() + labs(x = "Date")
 
 
+
+## Weather decompositon
+
+texas_weather %>% dplyr::select(temp_avg) %>% ts(., start = "2000", freq) seas() %>% autoplot()
 
 
 
