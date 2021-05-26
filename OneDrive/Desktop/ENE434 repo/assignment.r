@@ -268,23 +268,38 @@ loess_texas_weather <- texas_weather_bf_crisis %>%
   loess(temp_avg~date, data = .,  span = 0.05)
   
 
+# Loess SD
+loess_texas_weather <- texas_weather_bf_crisis %>% 
+  mutate(date = as.numeric(date)) %>%  
+  msir::loess.sd(x = texas_weather_bf_crisis$date, y = texas_weather_bf_crisis$temp_avg, 
+           span = 0.01, nsigma = 1.96)
+
 
 pred_loess_weather <- predict(loess_texas_weather)
 
+
+
 texas_weather_bf_crisis %<>% 
-  mutate(pred_loess  = pred_loess_weather)
+  mutate(pred_loess  = loess_texas_weather$y,
+         upper = loess_texas_weather$upper,
+         lower = loess_texas_weather$lower)
 
 
 texas_weather_bf_crisis %>% 
   ggplot() +
   geom_line(aes(x = date, y = temp_avg, col = "observed")) +
-  geom_line(aes(x = date, y = pred_loess, col = "predicted"))
+  geom_line(aes(x = date, y = pred_loess, col = "predicted")) +
+  geom_ribbon(aes(x = date, ymin = lower, ymax = upper), fill = "grey") +
+  scale_colour_manual(values = color_scheme) +
+  labs(title = "Loess estimation of weather data")
 
 
-resid_vec <- (texas_weather_bf_crisis$temp_avg - texas_weather_bf_crisis$pred_loess)
+resid_vec <- (texas_weather_bf_crisis$pred_loess- texas_weather_bf_crisis$temp_avg)
 training_rmse <- RMSE(.resid = resid_vec)
 
 
+
+## Evaluating models
 
 ## Plots
 
