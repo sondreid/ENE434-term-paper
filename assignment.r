@@ -218,11 +218,8 @@ demand_data_monthly <- demand_data_daily %>%
   dplyr::select(-year,-month)
 
 
-## Training data (Monthly)
-generation_total_train <- generation_monthly %>% filter(year(date) < 2019)
 
-
-# Seasonal decomposition of demand
+######### Seasonal decomposition of demand ########################################
 
 
 x13_decomp <- seas(ts(demand_data_monthly %>%  filter(year(date) > 2015) %>%  dplyr::select(mWh_demand_monthly), 
@@ -259,30 +256,41 @@ x13_decomp %>% ggplot(aes(x = date, y = seasonal)) + geom_line() + labs(x = "Dat
 
 # Texas before crisis, e.g before 2021 data
 
-texas_weather_bf_crisis <- texas_weather_avg %>% filter(year(date) < 2021) %>% 
-  as_tsibble(index = date)
+texas_weather_bf_crisis <- texas_weather_avg %>% filter(year(date) < 2021) 
 
+texas_temperature_crisis <- texas_weather_avg %>% filter(year(date) ==  2021) 
 
 loess_texas_weather <- texas_weather_bf_crisis %>% 
   mutate(date = as.numeric(date)) %>%  
   loess(temp_avg~date, data = .,  span = 0.05)
   
 
-# Loess SD
-loess_texas_weather <- texas_weather_bf_crisis %>% 
-  mutate(date = as.numeric(date)) %>%  
-  msir::loess.sd(x = texas_weather_bf_crisis$date, y = texas_weather_bf_crisis$temp_avg, 
-           span = 0.01, nsigma = 1.96)
-
-
 pred_loess_weather <- predict(loess_texas_weather)
 
 
+
+# Loess SD
+loess_texas_weather_bf_crisis <- texas_weather_avg %>% 
+  filter(year(date) < 2021) %>% 
+  mutate(date = as.numeric(date)) %>%  
+  msir::loess.sd(x = texas_weather_bf_crisis$date, y = texas_weather_bf_crisis$temp_avg, 
+           span = 0.01, nsigma = 2.576)
+
+loss_texas_weather_cris <- texas_weather_avg %>% 
+  filter(year(date) == 2021) %>% 
+  mutate(date = as.numeric(date)) %>%  
+  msir::loess.sd(x = texas_weather_bf_crisis$date, y = texas_weather_bf_crisis$temp_avg, 
+                 span = 0.01, nsigma = 2.576)
+
+texas_temperature <- mutate(pred_loess_before = loess_texas_weather$y,
+                            )
 
 texas_weather_bf_crisis %<>% 
   mutate(pred_loess  = loess_texas_weather$y,
          upper = loess_texas_weather$upper,
          lower = loess_texas_weather$lower)
+
+
 
 
 texas_weather_bf_crisis %>% 
@@ -299,8 +307,25 @@ training_rmse <- RMSE(.resid = resid_vec)
 
 
 
-## Evaluating models
 
+average_lower_temperatures <- texas_weather_bf_crisis %>% 
+  filter(month(date) == 2) %>% 
+  mutate(day = lubridate::day(date))
+
+
+average_lower_temperatures %<>% 
+  group_by(day) %>% 
+  summarise(lower_avg = mean(lower),
+            temp_avg  = mean(temp_avg),
+            upper_avg = mean(upper))
+
+
+texas_temperature_crisis 
+
+
+
+##### Evaluating models #######
+ 
 ## Plots
 
 
