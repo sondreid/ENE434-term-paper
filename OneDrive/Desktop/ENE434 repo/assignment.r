@@ -259,8 +259,7 @@ x13_decomp %>% ggplot(aes(x = date, y = seasonal)) + geom_line() + labs(x = "Dat
 
 # Texas before crisis, e.g before 2021 data
 
-texas_weather_bf_crisis <- texas_weather_avg %>% filter(year(date) < 2021) %>% 
-  as_tsibble(index = date)
+texas_weather_bf_crisis <- texas_weather_avg %>% filter(year(date) < 2021) 
 
 
 loess_texas_weather <- texas_weather_bf_crisis %>% 
@@ -299,8 +298,20 @@ training_rmse <- RMSE(.resid = resid_vec)
 
 
 
-## Evaluating models
 
+average_lower_temperatures <- texas_weather_bf_crisis %>% 
+  filter(month(date) == 2) %>% 
+  mutate(day = lubridate::day(date))
+
+
+average_lower_temperatures %<>% 
+  group_by(day) %>% 
+  summarise(lower_avg = mean(lower),
+            temp_avg  = mean(temp_avg),
+            upper_avg = mean(upper))
+
+##### Evaluating models #######
+ 
 ## Plots
 
 
