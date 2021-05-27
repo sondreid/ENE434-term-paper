@@ -24,7 +24,7 @@ setwd("C:/Users/sondr/OneDrive/Desktop/ENE434 repo")
 load(file = "Data/demand_data.Rdata")
 load(file = "Data/generation_data.Rdata")
 
-
+color_scheme <- c("black", "#EDA63A", "#5093F8") # General color scheme for plots 
 
 
 key <- "81a7388709d31bb149eb1cc9c7eba736"
@@ -60,7 +60,7 @@ texas_demand <- getEIA(ID = "EBA.TEX-ALL.D.HL", key = key) %>% as.data.frame()
 # Three stations as of now: Southern rough, Houston, LBJ road
 
 
-texas_weather <- read.csv("Data/texas_weather.csv") %>%
+texas_temperature <- read.csv("Data/texas_temperature.csv") %>%
   dplyr::select(NAME:TMIN) %>% 
   rename(station = NAME,
          date = DATE,
@@ -71,7 +71,7 @@ texas_weather <- read.csv("Data/texas_weather.csv") %>%
   dplyr::select(date, station, temp_avg, temp_min, temp_max)
 
 # Compose new dataframe where three station data is averaged
-texas_weather_avg <- texas_weather %>% group_by(date) %>% 
+texas_temperature_avg <- texas_temperature %>% group_by(date) %>% 
   filter(!is.na(temp_avg)) %>% 
   summarise(temp_avg = mean(temp_avg),
             temp_min = mean(temp_min), 
@@ -174,8 +174,8 @@ generation_daily <- generation_data %>%
   unique()
 
 
-save(demand_data, demand_data_daily,  file = "Data/demand_data.Rdata")
-save(generation_data, generation_daily, file = "Data/generation_data.Rdata")
+save(demand_data, demand_data_daily,generation_data, generation_daily, texas_temperature,  file = "Data/texas_data.Rdata")
+
 
 
 ### Descriptive statistics ####
@@ -232,7 +232,7 @@ x13_decomp <- data.frame(x13_decomp) %>%
   left_join(demand_data_monthly, by = "date")
 
 
-color_scheme <- c("black", "#EDA63A", "#5093F8") # General color scheme for plots
+
 
 facet_cols <- c("seasonal", "seasonaladj", "mWh_demand_monthly")
 x13_decomp_pivot <- pivot_longer(x13_decomp, cols = all_of(facet_cols),  names_to = "components", values_to = "demand") %>% 
@@ -250,50 +250,67 @@ x13_decomp_pivot %>%
 x13_decomp %>% ggplot(aes(x = date, y = seasonal)) + geom_line() + labs(x = "Date")
 
 
-
+#################################################################
 ######################## Weather model fitting ##################
 #################################################################
 
 # Texas before crisis, e.g before 2021 data
 
-texas_weather_bf_crisis <- texas_weather_avg %>% filter(year(date) < 2021) 
+texas_temperature_bf_crisis <- texas_temperature_avg %>% 
+  filter(year(date) < 2021)
+texas_temperature_crisis    <- texas_temperature_avg %>% 
+  filter(year(date) == 2021)
 
-texas_temperature_crisis <- texas_weather_avg %>% filter(year(date) ==  2021) 
 
-loess_texas_weather <- texas_weather_bf_crisis %>% 
+##### Local smoothed regression useing loess sd 
+loess_texas_temperature_bf_crisis <- texas_temperature_bf_crisis %>% 
   mutate(date = as.numeric(date)) %>%  
-  loess(temp_avg~date, data = .,  span = 0.05)
-  
-
-pred_loess_weather <- predict(loess_texas_weather)
-
-
-
-# Loess SD
-loess_texas_weather_bf_crisis <- texas_weather_avg %>% 
-  filter(year(date) < 2021) %>% 
-  mutate(date = as.numeric(date)) %>%  
-  msir::loess.sd(x = texas_weather_bf_crisis$date, y = texas_weather_bf_crisis$temp_avg, 
+  msir::loess.sd(x = texas_temperature_bf_crisis$date, y = texas_temperature_bf_crisis$temp_avg, 
            span = 0.01, nsigma = 2.576)
 
-loss_texas_weather_cris <- texas_weather_avg %>% 
-  filter(year(date) == 2021) %>% 
-  mutate(date = as.numeric(date)) %>%  
-  msir::loess.sd(x = texas_weather_bf_crisis$date, y = texas_weather_bf_crisis$temp_avg, 
-                 span = 0.01, nsigma = 2.576)
 
-texas_temperature <- mutate(pred_loess_before = loess_texas_weather$y,
-                            )
-
-texas_weather_bf_crisis %<>% 
-  mutate(pred_loess  = loess_texas_weather$y,
-         upper = loess_texas_weather$upper,
-         lower = loess_texas_weather$lower)
+loess_texas_temperature_bf_crisis <- msir::loess.sd(x = as.numeric(texas_temperature_bf_crisis$date), 
+                                                   y = texas_temperature_bf_crisis$temp_avg,
+                                                   span = 0.05,
+                                                   nsigma = 2.576)
 
 
+loess_texas_temperature_crisis <- msir::loess.sd(x = as.numeric(texas_temperature_crisis$date), 
+                                                 y = texas_temperature_crisis$temp_avg,
+                                                 span = 0.1,
+                                                 nsigma = 2.576)
 
 
-texas_weather_bf_crisis %>% 
+## Store results from predicitons as well as confidence intervals
+texas_temperature_crisis %<>% 
+  mutate(pred_loess  = loess_texas_temperature_crisis$y,
+         upper = loess_texas_temperature_crisis$upper,
+         lower = loess_texas_temperature_crisis$lower)
+
+texas_temperature_bf_crisis %<>% 
+  mutate(pred_loess  = loess_texas_temperature_bf_crisis$y,
+         upper = loess_texas_temperature_bf_crisis$upper,
+         lower = loess_texas_temperature_bf_crisis$lower)
+
+
+### Plot general difference
+
+
+texas_temperature_avg %>% 
+  filter(year(date) > 2006) %>% 
+  ggplot() +
+  geom_line(aes(x = date, y = temp_avg, col = "observed")) +
+  geom_line(aes(x = date, y = pred_loess, col = "predicted bf crisis"), 
+            data = texas_temperature_bf_crisis %>% filter(year(date) > 2006)) +
+  geom_line(aes(x = date, y = pred_loess, col = "predicted crisis"), 
+            data = texas_temperature_crisis) +
+  scale_colour_manual(values = color_scheme) +
+  labs(title = "Loess estimation of weather data")
+
+
+# Before crisis
+
+texas_temperature_bf_crisis %>% 
   ggplot() +
   geom_line(aes(x = date, y = temp_avg, col = "observed")) +
   geom_line(aes(x = date, y = pred_loess, col = "predicted")) +
@@ -302,25 +319,31 @@ texas_weather_bf_crisis %>%
   labs(title = "Loess estimation of weather data")
 
 
-resid_vec <- (texas_weather_bf_crisis$pred_loess- texas_weather_bf_crisis$temp_avg)
+resid_vec <- (texas_temperature_bf_crisis$pred_loess- texas_temperature_bf_crisis$temp_avg)
 training_rmse <- RMSE(.resid = resid_vec)
 
 
 
 
-average_lower_temperatures <- texas_weather_bf_crisis %>% 
+average_lower_temperatures_bf_crisis <- texas_temperature_bf_crisis %>% 
   filter(month(date) == 2) %>% 
-  mutate(day = lubridate::day(date))
-
-
-average_lower_temperatures %<>% 
+  mutate(day = lubridate::day(date)) %>% 
   group_by(day) %>% 
   summarise(lower_avg = mean(lower),
             temp_avg  = mean(temp_avg),
             upper_avg = mean(upper))
 
 
-texas_temperature_crisis 
+texas_temperature_avg_bf_crisi %>% 
+  mutate(pred_loess_before = loess_texas_temperature_bf_crisis$y,
+         upper_before      = loess_texas_temperature_bf_crisis$upper,
+         lower_before      = loess_texas_temperature_bf_crisis$lower,
+         pred_loess_crisis = loss_texas_temperature_cris$y,
+         upper_crisis      = loss_texas_temperature_cris$upper,
+         lower_crisis      = loss_texas_temperature_cris$lower)
+
+
+
 
 
 
@@ -329,7 +352,7 @@ texas_temperature_crisis
 ## Plots
 
 
-arima <- texas_weather_bf_crisis %>% as_tsibble(index = date) %>% 
+arima <- texas_temperature_bf_crisis %>% as_tsibble(index = date) %>% 
   model(weather_arima = ARIMA(temp_avg,
                               stepwise = TRUE, 
                               approximation = TRUE))
@@ -341,6 +364,8 @@ arima <- texas_weather_bf_crisis %>% as_tsibble(index = date) %>%
 arima %>% augment() %>% ggplot() + geom_line(aes(date, .fitted, col = "fitted")) + geom_line(aes(date, temp_avg, col = "org"))
 
 
+
+###### 2001 data  #########
 
 
 
