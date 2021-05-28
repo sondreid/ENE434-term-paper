@@ -1,8 +1,14 @@
 ---
-title: "Term paper: ENE434"
+title: "Term pape ENE434: Texas Energy Crisis"
 output: pdf_document
 ---
   
+The Texas Energy crisis was a series of rolling power blackouts that resulted in billions of dollars worth of loss, and estimated 151 lives lost.
+A record cold wave hit the majority of mainland United States resulting in sustained temperatures well below 0 degrees celsius.
+The contrast between the record temperatures induced by the coldwave and normal winter temperatures was particularly stark in the south of the United States.
+The majority of homes and businesses in Texas rely on heating by resistive heating or reversed-refrigeration. In particular, over 60 % of
+homes rely entirely on electrical power for heating. 
+As many of the power generating facilities lacks winterization, all types of energy generation sources saw a degrees
 
 ```{r, echo = FALSE, include=FALSE}
 
@@ -12,4 +18,16 @@ output: pdf_document
 
 ```
 
+
+
+
+
+
+```{r, echo = TRUE, include=TRUE}
+
+
+
+
+
+```
 
