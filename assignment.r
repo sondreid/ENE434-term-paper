@@ -122,7 +122,8 @@ processFrameGeneration <- function(df, type) {
 
 ## Generation data for all sources
 
-generation_data <- processFrameGeneration(texas_nuclear_generation, "nuclear") %>%
+generation_data <- 
+            processFrameGeneration(texas_nuclear_generation, "nuclear") %>%
   bind_rows(processFrameGeneration(texas_gas_generation, "gas"),
             processFrameGeneration(texas_coal_generation, "coal"),
             processFrameGeneration(texas_solar_generation, "solar"),

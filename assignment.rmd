@@ -1,5 +1,5 @@
 ---
-title: "Term pape ENE434: Texas Energy Crisis"
+title: "Term paper ENE434: Texas Energy Crisis"
 output: pdf_document
 ---
   
@@ -8,22 +8,89 @@ A record cold wave hit the majority of mainland United States resulting in susta
 The contrast between the record temperatures induced by the coldwave and normal winter temperatures was particularly stark in the south of the United States.
 The majority of homes and businesses in Texas rely on heating by resistive heating or reversed-refrigeration. In particular, over 60 % of
 homes rely entirely on electrical power for heating. 
-As many of the power generating facilities lacks winterization, all types of energy generation sources saw a degrees
+As many of the power generating facilities lacks winterization, all types of energy generation sources saw a reduction in a net generation. 
+The combination of substantially increased demand and reduction in power generation lead to the decision of ERCOT to reduce load on the electrical grid. 
+This was an unevitable outcome, as the ever strained power generation and increasing power demand will lead to a decrease in frequency unless load is shed. 
+Such a frequency drop may damage equipment, and cause instability across the grid. In the United States power generation is synchronized to operate at 60 hz, with adverse affects occurring already at 0.6 hz decrease in frequency. 
+The two largest energy sources, natural gas and wind power, went through the largest reductions in net output of all sources. 
 
 ```{r, echo = FALSE, include=FALSE}
 
-
-
-
-
+library(EIAdata)
+library(fpp3)
+library(tidyverse)
+library(magrittr)
+library(lubridate)
+library(x13binary)
+library(seasonal)
+`%notin%` <- Negate(`%in%`) #Adds  a custom inverse %in% function
+load(file = "Data/texas_data.Rdata")
+color_scheme <- c("black", "#EDA63A", "#5093F8") # General color scheme for plots 
 ```
 
 
+
+Power generation and demand in february
+```{r, echo = TRUE, include=TRUE}
+### Energy generation by source in february
+
+demand_data_daily  %>% 
+  filter(month(date) == 2 & 
+           year(date) == 2021) %>% 
+  ggplot() +
+  geom_line(aes(x = date, y = mWh_demand_daily, col = "mWh demand")) +
+  geom_line(aes(x = date, mWh_generated, col = "mWh generated" ),
+            data = generation_daily %>% filter(
+              month(date) == 2 &
+              year(date) == 2021 &
+              type == "total"
+            )) +
+  scale_colour_manual(values = color_scheme) +
+  labs(title = "Demand vs power generation", subtitle = "in mWh",
+       x = "Date", y = "mWh") +
+  theme_bw()
+
+```
+We can see that net generation exceeds in particular around February 14th, where ERCOT decided to shed load to preserve grid stability. 
+We will explore those days closer in the next plot.
+
+
+```{r, echo = TRUE, include=TRUE}
+### Energy generation by source in february
+
+demand_data_daily  %>% 
+  filter(date > "2021-02-12" &
+         date < "2021-02-25") %>% 
+  ggplot() +
+  geom_line(aes(x = date, y = mWh_demand_daily, col = "mWh demand")) +
+  geom_line(aes(x = date, mWh_generated, col = "mWh generated" ),
+            data = generation_daily %>% 
+              filter(date > "2021-02-12" &
+              date < "2021-02-25",
+              type == "total"
+            )) +
+  scale_colour_manual(values = color_scheme) +
+  labs(title = "Demand vs power generation", subtitle = "in mWh",
+       x = "Date", y = "mWh") +
+  theme_bw()
+
+```
+By looking at the plot above we can see that the discrepenacy between power generation and demand b
 
 
 
 
 ```{r, echo = TRUE, include=TRUE}
+### Energy generation by source in february
+generation_daily  %>% 
+  filter(month(date) == 2 & 
+           year(date) == 2021 & 
+           type %notin% c("total", "other")) %>% 
+  ggplot(aes(x = date, y = mWh_generated)) +
+  geom_line(aes(col = type))
+
+
+
 
 
 
