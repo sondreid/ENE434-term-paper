@@ -21,8 +21,8 @@ setwd("C:/Users/sondr/OneDrive/Desktop/ENE434 repo")
 
 ## Load preassembled Rdata files
 
-load(file = "Data/demand_data.Rdata")
-load(file = "Data/generation_data.Rdata")
+load(file = "Data/texas_data.Rdata")
+
 
 color_scheme <- c("black", "#EDA63A", "#5093F8") # General color scheme for plots 
 
@@ -174,7 +174,7 @@ generation_daily <- generation_data %>%
   unique()
 
 
-save(demand_data, demand_data_daily,generation_data, generation_daily, texas_temperature,  file = "Data/texas_data.Rdata")
+
 
 
 
@@ -218,6 +218,13 @@ demand_data_monthly <- demand_data_daily %>%
   dplyr::select(-year,-month)
 
 
+
+save(demand_data, demand_data_daily, 
+     demand_data_monthly, 
+     generation_data, 
+     generation_daily, 
+     generation_monthly,
+     texas_temperature,  file = "Data/texas_data.Rdata")
 
 ######### Seasonal decomposition of demand ########################################
 
@@ -331,10 +338,19 @@ average_lower_temperatures_bf_crisis <- texas_temperature_bf_crisis %>%
   group_by(day) %>% 
   summarise(lower_avg = mean(lower),
             temp_avg  = mean(temp_avg),
-            upper_avg = mean(upper))
+            upper_avg = mean(upper)) 
+
+average_lower_temperatures_bf_crisis <- texas_temperature_bf_crisis %>% 
+  filter(month(date) == 2) %>% 
+  mutate(day = lubridate::day(date)) %>% 
+  group_by(day) %>% 
+  summarise(lower_avg = mean(lower),
+            temp_avg  = mean(temp_avg),
+            upper_avg = mean(upper)) %>% 
+  mutate(lower_2021  = (texas_temperature_crisis %>% filter(month(date) == 2))$lower)
 
 
-texas_temperature_avg_bf_crisi %>% 
+texas_temperature_avg_bf_crisis %>% 
   mutate(pred_loess_before = loess_texas_temperature_bf_crisis$y,
          upper_before      = loess_texas_temperature_bf_crisis$upper,
          lower_before      = loess_texas_temperature_bf_crisis$lower,
@@ -349,19 +365,7 @@ texas_temperature_avg_bf_crisi %>%
 
 ##### Evaluating models #######
  
-## Plots
 
-
-arima <- texas_temperature_bf_crisis %>% as_tsibble(index = date) %>% 
-  model(weather_arima = ARIMA(temp_avg,
-                              stepwise = TRUE, 
-                              approximation = TRUE))
-
-
-
-
-
-arima %>% augment() %>% ggplot() + geom_line(aes(date, .fitted, col = "fitted")) + geom_line(aes(date, temp_avg, col = "org"))
 
 
 
