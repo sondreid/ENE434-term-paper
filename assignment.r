@@ -304,7 +304,6 @@ texas_temperature_bf_crisis %<>%
 
 
 texas_temperature_avg %>% 
-  filter(year(date) > 2006) %>% 
   ggplot() +
   geom_line(aes(x = date, y = temp_avg, col = "observed")) +
   geom_line(aes(x = date, y = pred_loess, col = "predicted bf crisis"), 
@@ -334,20 +333,12 @@ training_rmse <- RMSE(.resid = resid_vec)
 
 average_lower_temperatures_bf_crisis <- texas_temperature_bf_crisis %>% 
   filter(month(date) == 2) %>% 
-  mutate(day = lubridate::day(date)) %>% 
+  mutate(day = day(date)) %>% 
   group_by(day) %>% 
   summarise(lower_avg = mean(lower),
             temp_avg  = mean(temp_avg),
-            upper_avg = mean(upper)) 
+            upper_avg = mean(upper))
 
-average_lower_temperatures_bf_crisis <- texas_temperature_bf_crisis %>% 
-  filter(month(date) == 2) %>% 
-  mutate(day = lubridate::day(date)) %>% 
-  group_by(day) %>% 
-  summarise(lower_avg = mean(lower),
-            temp_avg  = mean(temp_avg),
-            upper_avg = mean(upper)) %>% 
-  mutate(lower_2021  = (texas_temperature_crisis %>% filter(month(date) == 2))$lower)
 
 
 texas_temperature_avg_bf_crisis %>% 
@@ -357,6 +348,19 @@ texas_temperature_avg_bf_crisis %>%
          pred_loess_crisis = loss_texas_temperature_cris$y,
          upper_crisis      = loss_texas_temperature_cris$upper,
          lower_crisis      = loss_texas_temperature_cris$lower)
+
+
+
+
+average_lower_temperatures_bf_crisis %>% 
+  ggplot() +
+  geom_line(aes(x = day, y = temp_avg, col = "pre 2021")) +
+  geom_line(aes(x = day, y = temp_avg, col = "2021"),
+            data = texas_temperature_crisis %>% filter(month(date) == 2)  %>% mutate(day = day(date))) +
+  geom_line(aes(x = day, y = temp_avg, col = "2011"),
+            data = texas_temperature_bf_crisis %>% filter(month(date) == 2, year(date) == 2011) %>% mutate(day = day(date))) +
+  scale_colour_manual(values = color_scheme) +
+  labs(title = "Average weather temperature for february")
 
 
 
