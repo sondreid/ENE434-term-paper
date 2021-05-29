@@ -388,7 +388,6 @@ average_lower_temperatures_bf_crisis %>%
 
 
 
-###### 2001 data  #########
 
 
 
@@ -400,6 +399,11 @@ average_lower_temperatures_bf_crisis %>%
 ## Univariate models
 
 
+
+# Dynamic regression model
+
+
+# 2011 temperatures
 
 
 

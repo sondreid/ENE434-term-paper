@@ -22,11 +22,50 @@ library(tidyverse)
 library(magrittr)
 library(lubridate)
 library(x13binary)
+librrary(kableExtra)
 library(seasonal)
 `%notin%` <- Negate(`%in%`) #Adds  a custom inverse %in% function
 load(file = "Data/texas_data.Rdata")
-color_scheme <- c("black", "#EDA63A", "#5093F8") # General color scheme for plots 
+color_scheme <- c("black", "#EDA63A", "#5093F8",
+                  "#34eb89", "#9d45f5",  "#f5455c") # General color scheme for plots 
 ```
+
+
+
+
+
+```{r, echo = TRUE, include=TRUE}
+# Minimum, 25%-percentile, Mean, Median, 75%-percentile and Maximum by month
+
+# Create table data
+
+tibble("Max" = min(demand_data_daily$mWh_demand_daily), "Minimum" = "", Type = "Demand")
+
+
+table_data <- data.frame("Minmum", "Max", "Type")
+demand_data_daily %>% 
+  mutate(
+    "Minimum_demand" = min(mWh_demand_daily),
+    "25% - percentil" = quantile(mWh_demand_daily, .25)
+  ) %>%  unique()
+
+unemployment_train  %>% 
+    mutate(month = lubridate::month(date))  %>%
+    group_by(month)  %>% 
+    rename(Month = month) %>% 
+    summarise( 
+        Min = min(unemployed),
+        "25%-percentil" = quantile(unemployed, 0.25),
+        Mean = mean(unemployed),
+        Median = median(unemployed),
+        "75%entil" = quantile(unemployed, 0.75),
+        Max = max(unemployed)) %>% 
+    kbl(caption = "Summary statistics of unemployment level in US") %>%
+    kable_classic(full_width = F, html_font = "Times new roman")
+                  
+```
+
+
 
 
 
@@ -56,23 +95,37 @@ We will explore those days closer in the next plot.
 
 
 ```{r, echo = TRUE, include=TRUE}
-### Energy generation by source in february
+### Closer look at load sheds days
 
+#load_sheds <- data.frame(date = lubridate::ymd(c("2021-02-14")),
+ #                        load_shed = c())
+
+  
+  
+  
 demand_data_daily  %>% 
-  filter(date > "2021-02-12" &
-         date < "2021-02-25") %>% 
+  filter(date > "2021-02-07" &
+         date < "2021-02-23") %>% 
+  mutate(mWh_generated = (generation_daily %>% 
+              filter(date > "2021-02-07" &
+              date < "2021-02-23",
+              type == "total"
+            ))$mWh_generated) %>% 
   ggplot() +
   geom_line(aes(x = date, y = mWh_demand_daily, col = "mWh demand")) +
-  geom_line(aes(x = date, mWh_generated, col = "mWh generated" ),
-            data = generation_daily %>% 
-              filter(date > "2021-02-12" &
-              date < "2021-02-25",
-              type == "total"
-            )) +
+  geom_line(aes(x = date, mWh_generated, col = "mWh generated" )) +
+  geom_ribbon(aes(x = date, ymin = mWh_demand_daily,
+                  ymax = mWh_generated), fill = "grey") +
+ geom_vline(xintercept = as.numeric(as.Date("2021-02-14")),
+            linetype = 4, col = "#eb8034") +
   scale_colour_manual(values = color_scheme) +
   labs(title = "Demand vs power generation", subtitle = "in mWh",
        x = "Date", y = "mWh") +
   theme_bw()
+  
+  
+  
+
 
 ```
 By looking at the plot above we can see that the discrepenacy between power generation and demand b
@@ -86,8 +139,14 @@ generation_daily  %>%
   filter(month(date) == 2 & 
            year(date) == 2021 & 
            type %notin% c("total", "other")) %>% 
-  ggplot(aes(x = date, y = mWh_generated)) +
-  geom_line(aes(col = type))
+  ggplot(aes(x = date, y = mWh_generated)) + 
+  geom_line(aes(col = type)) +
+  scale_colour_manual(values = color_scheme) +
+  labs(title = "Power generation for all major sources in Texas",
+       subtitle = "in mWh",
+       x = "Date", y = "mWh") +
+  theme_bw() +
+  scale_colour_discrete("Type of generation")
 
 
 
