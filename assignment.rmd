@@ -47,7 +47,7 @@ texas_temperature_avg <- texas_temperature %>% group_by(date) %>%
             temp_min = mean(temp_min), 
             temp_max = mean(temp_max)) 
 
-
+options(knitr.kable.NA = '')
 
 
 ```
@@ -61,31 +61,42 @@ Unfortunately, the power generation data collected for this analysis only goes b
 
 # Create table data
 
-table_data <- demand_data_daily %>% filter(date > "2018-07-01") %>% 
+table_power_input_data <- demand_data_daily %>% filter(date > "2018-07-01") %>% 
   left_join(generation_daily %>% filter(type == "total"), by = c("date")) %>% 
   filter(!is.na(mWh_generated))
 
 
-
 tibble(Type = "Power demand", 
-       Minimum = min(table_data$mWh_demand_daily), 
-       Max = max(table_data$mWh_demand_daily),
-       "Maximum demand date" = table_data[which.max(table_data$mWh_generated),]$date,
-       "Minimum demand date" = table_data[which.min(table_data$mWh_generated),]$date,
-       "25% - percentile" = quantile(demand_data_daily$mWh_demand_daily, 0.25),
-       "75% - percentile" = quantile(demand_data_daily$mWh_demand_daily, 0.75)) %>% 
-  
+       Minimum = min(table_power_input_data$mWh_demand_daily), 
+       Max = max(table_power_input_data$mWh_demand_daily),
+       "Maximum date" = table_power_input_data[which.max(table_power_input_data$mWh_demand_daily),]$date,
+       "Minimum date" = table_power_input_data[which.min(table_power_input_data$mWh_demand_daily),]$date,
+       "25% - percentile" = quantile(table_power_input_data$mWh_demand_daily, 0.25),
+       "75% - percentile" = quantile(table_power_input_data$mWh_demand_daily, 0.75)) %>% 
   bind_rows(
     tibble(Type = "Power generation", 
-       Minimum = min(generation_daily$mWh_generated), 
-       Max = max(generation_daily$mWh_generated),
-       "25% - percentile" = quantile(generation_daily$mWh_generated, 0.25),
-       "75% - percentile" = quantile(generation_daily$mWh_generated, 0.75)),
+       Minimum = min(table_power_input_data$mWh_generated), 
+       Max = max(table_power_input_data$mWh_generated),
+       "Maximum date" = table_power_input_data[which.max(table_power_input_data$mWh_generated),]$date,
+       "Minimum date" = table_power_input_data[which.min(table_power_input_data$mWh_generated),]$date,
+       "25% - percentile" = quantile(table_power_input_data$mWh_generated, 0.25),
+       "75% - percentile" = quantile(table_power_input_data$mWh_generated, 0.75)),) %>% 
+  kbl(caption = "Summary statistics of power generaton and power demand in Texas (from 2018-07)") %>%
+    kable_classic(full_width = F, html_font = "Times new roman")
+
+
+test <- tibble("Maximum deviation" =max(table_power_input_data$mWh_demand_daily - table_power_input_data$mWh_generated),
+       "Maximum deviation date" = table_power_input_data[which.max(max(table_power_input_data$mWh_demand_daily - 
+                                                                         table_power_input_data$mWh_generated)),]$date) %>% 
+    kbl(caption = "Maximum difference in power demand and total power generation") %>%
+    kable_classic(full_width = F, html_font = "Times new roman")
+
+
     tibble(Type = "Temperature",
            Minimum  = min(texas_temperature_avg$temp_avg),
            Max      = max(texas_temperature_avg$temp_avg),
            "25% - percentile" = quantile(texas_temperature_avg$temp_avg, 0.25)))  %>% 
-  kbl(caption = "Summary statistics of power generaton and power demand in Texas (2015-)") %>%
+  kbl(caption = "Summary statistics of power generaton and power demand in Texas (from 2018-07)") %>%
     kable_classic(full_width = F, html_font = "Times new roman")
 
 
