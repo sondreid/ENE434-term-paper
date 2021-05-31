@@ -425,44 +425,100 @@ average_lower_temperatures_bf_crisis %>%
 
 # 2011 minimum temperatures
 
+# Divide into training set and test set using 
+
+# finding whole weeks with 7 day seasonality
+#seq(ymd("2019-11-4"), ymd("2020-01-31"), by = "days") %>% length()
+
 
 # Training dataset 
-demand_train <- demand_data_daily %>% 
-  filter(date > "2019-12-15" & date < "2020-01-31")
+train_demand_temp <- demand_data_daily %>% 
+  left_join(texas_temperature_avg, by = "date") %>% 
+  filter(date > "2019-11-4" & date < "2020-02-01")
 
-demand_test <- demand_data_daily %>% filter(year(date) == 2020 &
-                                            month(date) == 2)
+test_demand_temp <- demand_data_daily %>% 
+  left_join(texas_temperature_avg, by = "date") %>% 
+  filter(year(date) == 2020 &
+         month(date) == 2)
+
+train_demand_temp_2021 <- demand_data_daily %>% 
+  left_join(texas_temperature_avg, by = "date") %>% 
+  filter(date > "2020-11-2" & date < "2021-02-01")
+
+
+test_demand_temp_2021 <- demand_data_daily %>% 
+  filter(year(date) == 2021 &
+         month(date) == 2)
 
 
 ## Stationarity tests
 
-unitroot_kpss(diff(demand_train$mWh_demand_daily)) 
-tseries::adf.test(diff(demand_train$mWh_demand_daily))
+unitroot_kpss(train_demand_temp$mWh_demand_daily) 
+tseries::adf.test(train_demand_temp$mWh_demand_daily)
 
-demand_train$mWh_demand_daily <- difference(demand_train$mWh_demand_daily)
-demand_train %<>% filter(!is.na(mWh_demand_daily))
-# Reject stationarity - need for differencing
+#train_demand_temp$mWh_demand_daily <- difference(train_demand_temp$mWh_demand_daily)
+#train_demand_temp %<>% filter(!is.na(mWh_demand_daily))
+# Reject stationarity - no need for differencing
 
 
 # Optimal univariate model
-fit_arima_uni <- demand_train %>% 
-  as_tsibble(index = date) %>% model(arima_fit = ARIMA(mWh_demand_daily, 
+fit_arima_uni <- train_demand_temp %>% 
+  as_tsibble(index = date) %>% model(arima_fit = ARIMA(mWh_demand_daily~ 0+ pdq(1,1,1) +PDQ(3,0,2), 
                                                            stepwise = FALSE,
                                                            approximation = FALSE))
 
+#ok model: 0+ pdq(1,1,1) +PDQ(3,0,2)7
 
-### Evaluation 
 
-fc_arima_uni <- forecast(h = 30 )
+# Generate forecasts
+fc_arima_uni <- fit_arima_uni %>% forecast(h = 29 )
 
+
+fc_arima_uni %>% accuracy(test_demand_temp %>% as_tsibble())
+
+
+
+
+
+fc_arima_uni %>% 
+  mutate(date = seq(ymd("2020-02-01"), ymd("2020-02-29"), by = "days")) %>% 
+  ggplot() +
+  geom_line(aes(x = date, y = .mean, col = "Arima uni")) + 
+  geom_line(aes(x = date, y = mWh_demand_daily, col = "train"), data = train_demand_temp) +
+  geom_line(aes(x = date, y = mWh_demand_daily, col = "test"), data = test_demand_temp) +
+  scale_colour_manual(values = color_scheme) +
+  labs(title= "Arima fc") +
+  theme_bw()
 
 
 # Dynamic regression model
-'
 
-'
 
-# 2011 temperatures
+
+
+
+
+fit_arima_temperature_demand <- train_demand_temp %>% 
+  as_tsibble(index = date) %>% 
+  model(arima_dynamic_temp = ARIMA(mWh_demand_daily ~ temp_avg,
+                                   stepwise = FALSE,
+                                   approximation = FALSE))
+
+
+# 2011 temperatures as newdata
+
+temperature_2011 <- texas_temperature_avg %>% 
+  filter(date > "2011-01-15" &
+           date < "2011-02-14") %>% 
+  as_tsibble(index = date)
+
+
+# Forecast
+
+fc_arima_temperature_demand <- temperature_arima_fit %>% 
+  forecast(new_data = temperature_2011)
+
+### Evaluation 
 
 
 
