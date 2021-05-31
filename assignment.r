@@ -95,8 +95,8 @@ texas_temperature <- read.csv("Data/texas_temperature.csv") %>%
 texas_temperature_avg <- texas_temperature %>% group_by(date) %>% 
   filter(!is.na(temp_avg)) %>% 
   summarise(temp_avg = mean(temp_avg),
-            temp_min = mean(temp_min), 
-            temp_max = mean(temp_max)) 
+            temp_min = min(temp_min), 
+            temp_max = max(temp_max)) 
 
 retrieveHour <- function(x) {
   #'
@@ -431,11 +431,18 @@ average_lower_temperatures_bf_crisis %>%
 # finding whole weeks with 7 day seasonality
 #seq(ymd("2019-11-4"), ymd("2020-01-31"), by = "days") %>% length()
 
+# Last energy outtages
+
+demand_data_daily %>% 
+  filter(year(date)  == 2011) %>% 
+  ggplot() +
+  geom_line(aes(date, mWh_demand_daily)) +
+  theme_bw()
 
 # Training dataset 
 train_demand_temp <- demand_data_daily %>% 
   left_join(texas_temperature_avg, by = "date") %>% 
-  filter(date > "2019-11-4" & date < "2020-02-01")
+  filter(date > "2020-01-01" & date < "2020-02-01")
 
 test_demand_temp <- demand_data_daily %>% 
   left_join(texas_temperature_avg, by = "date") %>% 
@@ -444,7 +451,7 @@ test_demand_temp <- demand_data_daily %>%
 
 train_demand_temp_2021 <- demand_data_daily %>% 
   left_join(texas_temperature_avg, by = "date") %>% 
-  filter(date > "2020-11-2" & date < "2021-02-01")
+  filter(date >= "2021-01-01" & date < "2021-02-01")
 
 
 test_demand_temp_2021 <- demand_data_daily %>% 
@@ -551,13 +558,45 @@ temperature_2011_2021 <- texas_temperature_avg %>%
   mutate(date = seq(ymd("2021-02-01"), ymd("2021-02-28"), by = "days")) %>% 
   as_tsibble(index = date)
 
-temperature_2000_2021 <- texas_temperature_avg %>% 
-  filter(date > "2011-01-16" &
-           date < "2011-02-14") %>% 
-  mutate(date = seq(ymd("2021-02-01"), ymd("2021-02-28"), by = "days")) %>% 
+
+
+# Temperature arima sim
+#################################################################
+arima_temperature_2011 <- texas_temperature_avg %>% filter(year(date) == 2011 &
+                                                             (month(date) == 1 |
+                                                                month(date) == 2)) %>% 
+  as_tsibble(index = date)
+fit_arima_temperature <- arima_temperature_2011 %>% model(arima_temperature = ARIMA(temp_avg,
+                                                                                    stepwise = FALSE,
+                                                                                    approximation = FALSE))
+
+ar_terms <- (fit_arima_temperature %>% 
+               coefficients %>% 
+               filter(str_detect(term,"ar")))$estimate %>% 
+  c(.)
+
+sma_terms <- (fit_arima_temperature %>% coefficients 
+              %>% filter(str_detect(term, "sma")))$estimate %>% 
+  c(.)
+arima_sim_model <- list(order = c(4, 1, 0), 
+                        ar = ar_terms, 
+                        sma = sma_terms)
+
+sigma <- sd(residuals(fit_arima_temperature)$.resid)
+
+sim_arima_temperature <- arima.sim(n = 40, 
+                                   model = arima_sim_model,
+                                   sd = sigma)
+sim_arima_temperature %>% plot()
+
+
+temperature_sim <- data.frame(date = seq(ymd("2021-02-01"), ymd("2021-03-13"), by = "day"),
+                              temp_avg = sim_arima_temperature) %>% 
   as_tsibble(index = date)
 
 
+
+#save(somewhat_extreme_sim, file = "Data/extreme_sim.Rdata")
 
 # Four days
 temperature_2011_2021 <- texas_temperature_avg %>% 
@@ -573,14 +612,17 @@ train_demand_temp_2021 <- demand_data_daily %>%
   
 
 
-fit_2021_arima_temperature_demand <- train_demand_temp_2021 %>% 
+fit_2021_arima_temperature_demand <- train_demand_temp_2021   %>% 
   as_tsibble(index = date) %>% 
-  model(arima_dynamic_temp_2021 = ARIMA(mWh_demand_daily ~ temp_min + pdq(0,0,2) + PDQ(1,0,0)),
-        arima_dynamic_2021_opt  = ARIMA(mWh_demand_daily ~ temp_min) )
+  model(arima_dynamic_temp_2021 = ARIMA(mWh_demand_daily ~ temp_avg + pdq(0,0,2) + PDQ(1,0,0)),
+        arima_dynamic_2021_opt  = ARIMA(mWh_demand_daily ~ temp_avg) )
 
 
 fc_arima_temperature_demand_2021 <- fit_2021_arima_temperature_demand %>% 
   forecast(new_data = temperature_2011_2021)
+
+
+
 
 
 

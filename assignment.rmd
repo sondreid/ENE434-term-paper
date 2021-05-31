@@ -44,8 +44,8 @@ texas_temperature <- read.csv("Data/texas_temperature.csv") %>%
 texas_temperature_avg <- texas_temperature %>% group_by(date) %>% 
   filter(!is.na(temp_avg)) %>% 
   summarise(temp_avg = mean(temp_avg),
-            temp_min = mean(temp_min), 
-            temp_max = mean(temp_max)) 
+            temp_min = min(temp_min), 
+            temp_max = max(temp_max)) 
 
 options(knitr.kable.NA = '')
 
