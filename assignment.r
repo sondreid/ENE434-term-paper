@@ -447,6 +447,7 @@ train_demand_temp_2021 <- demand_data_daily %>%
 
 
 test_demand_temp_2021 <- demand_data_daily %>% 
+  left_join(texas_temperature_avg, by = "date") %>% 
   filter(year(date) == 2021 &
          month(date) == 2)
 
@@ -510,13 +511,89 @@ fit_arima_temperature_demand <- train_demand_temp %>%
 temperature_2011 <- texas_temperature_avg %>% 
   filter(date > "2011-01-15" &
            date < "2011-02-14") %>% 
+  mutate(date = seq(ymd("2020-02-01"), ymd("2020-02-29"), by = "days")) %>% 
   as_tsibble(index = date)
 
 
 # Forecast
 
-fc_arima_temperature_demand <- temperature_arima_fit %>% 
+fc_arima_temperature_demand <- fit_arima_temperature_demand %>% 
   forecast(new_data = temperature_2011)
+
+
+fc_arima_temperature_demand %>% 
+  ggplot() +
+  geom_line(aes(x = date, y = .mean, col = "Arima uni")) + 
+  geom_line(aes(x = date, y = mWh_demand_daily, col = "Observed prior data"), data = train_demand_temp) +
+  geom_line(aes(x = date, y = mWh_demand_daily, col = "Test set"), data = test_demand_temp) +
+  scale_colour_manual(values = color_scheme) +
+  labs(title= "Arima fc") +
+  theme_bw()
+
+
+# Accuracy
+
+# MASE
+
+MASE(.resid = test_demand_temp$mWh_demand_daily-fc_arima_temperature_demand$.mean, .train = train_demand_temp$mWh_demand_daily, .period = 7)
+
+
+fc_arima_temperature_demand %>% accuracy(test_demand_temp %>% as_tsibble())
+
+# 2021- can we predict the peak demand? 
+
+# Temperature 2011
+
+temperature_2011_2021 <- texas_temperature_avg %>% 
+  filter(date > "2011-01-16" &
+           date < "2011-02-14") %>% 
+  mutate(date = seq(ymd("2021-02-01"), ymd("2021-02-28"), by = "days")) %>% 
+  as_tsibble(index = date)
+
+temperature_2000_2021 <- texas_temperature_avg %>% 
+  filter(date > "2011-01-16" &
+           date < "2011-02-14") %>% 
+  mutate(date = seq(ymd("2021-02-01"), ymd("2021-02-28"), by = "days")) %>% 
+  as_tsibble(index = date)
+
+
+
+# Four days
+temperature_2011_2021 <- texas_temperature_avg %>% 
+  filter(date > "2011-01-31" &
+           date < "2011-02-6") %>% 
+  mutate(date = seq(ymd("2021-02-01"), ymd("2021-02-5"), by = "days")) %>% 
+  as_tsibble(index = date)
+
+
+fit_2021_arima_temperature_demand <- train_demand_temp_2021 %>% 
+  as_tsibble(index = date) %>% 
+  model(arima_dynamic_temp_2021 = ARIMA(mWh_demand_daily ~ temp_min + pdq(0,0,2) + PDQ(1,0,0)))
+
+
+fc_arima_temperature_demand_2021 <- fit_2021_arima_temperature_demand %>% 
+  forecast(new_data = temperature_2011_2021)
+
+
+# Plot 2021 forecast
+
+
+
+fc_arima_temperature_demand_2021 %>% 
+  ggplot() +
+  geom_line(aes(x = date, y = .mean, col = "Arima uni")) + 
+  geom_line(aes(x = date, y = mWh_demand_daily, col = "Observed prior data"), data = train_demand_temp_2021) +
+  geom_line(aes(x = date, y = mWh_demand_daily, col = "Test set"), data = test_demand_temp_2021) +
+  scale_colour_manual(values = color_scheme) +
+  labs(title= "Dynamic regression model February 2021",
+       ylab = "Demand in mWh",
+       xlab = "Date") +
+  theme_bw()
+
+
+
+
+
 
 ### Evaluation 
 
