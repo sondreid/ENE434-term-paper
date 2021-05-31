@@ -222,4 +222,24 @@ generation_daily  %>%
 
 
 ```
+```{r, echo = TRUE, include=TRUE}
+### Temperature averages
+texas_temperature_avg   %>% 
+  ggplot(aes(x = date, y = temp_avg)) + 
+  geom_line() +
+  scale_colour_manual(values = color_scheme) +
+  labs(title = "Average daily temperatures",
+       subtitle = "in degrees celsius",
+       x = "Date", y = "Degrees celsius") +
+  theme_bw() 
+
+
+
+
+
+
+
+
+```
+
 

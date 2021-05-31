@@ -24,7 +24,8 @@ library(seasonal)
 load(file = "Data/texas_data.Rdata")
 
 
-color_scheme <- c("black", "#EDA63A", "#5093F8") # General color scheme for plots 
+color_scheme <- c("black", "#EDA63A", "#5093F8",
+                  "#34eb89", "#9d45f5",  "#f5455c") # General color scheme for plots 
 
 
 key <- "81a7388709d31bb149eb1cc9c7eba736"
@@ -566,13 +567,23 @@ temperature_2011_2021 <- texas_temperature_avg %>%
   as_tsibble(index = date)
 
 
+train_demand_temp_2021 <- demand_data_daily %>% 
+  left_join(texas_temperature_avg, by = "date") %>% 
+  filter(date > "2020-12-15" & date < "2021-01-15")
+  
+
+
 fit_2021_arima_temperature_demand <- train_demand_temp_2021 %>% 
   as_tsibble(index = date) %>% 
-  model(arima_dynamic_temp_2021 = ARIMA(mWh_demand_daily ~ temp_min + pdq(0,0,2) + PDQ(1,0,0)))
+  model(arima_dynamic_temp_2021 = ARIMA(mWh_demand_daily ~ temp_min + pdq(0,0,2) + PDQ(1,0,0)),
+        arima_dynamic_2021_opt  = ARIMA(mWh_demand_daily ~ temp_min) )
 
 
 fc_arima_temperature_demand_2021 <- fit_2021_arima_temperature_demand %>% 
   forecast(new_data = temperature_2011_2021)
+
+
+
 
 
 # Plot 2021 forecast
@@ -581,7 +592,7 @@ fc_arima_temperature_demand_2021 <- fit_2021_arima_temperature_demand %>%
 
 fc_arima_temperature_demand_2021 %>% 
   ggplot() +
-  geom_line(aes(x = date, y = .mean, col = "Arima uni")) + 
+  geom_line(aes(x = date, y = .mean, col = .model)) + 
   geom_line(aes(x = date, y = mWh_demand_daily, col = "Observed prior data"), data = train_demand_temp_2021) +
   geom_line(aes(x = date, y = mWh_demand_daily, col = "Test set"), data = test_demand_temp_2021) +
   scale_colour_manual(values = color_scheme) +
