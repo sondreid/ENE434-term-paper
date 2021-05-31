@@ -84,44 +84,52 @@ tibble(Type = "Power demand",
   kbl(caption = "Summary statistics of power generaton and power demand in Texas (from 2018-07)") %>%
     kable_classic(full_width = F, html_font = "Times new roman")
 
-
-test <- tibble("Maximum deviation" =max(table_power_input_data$mWh_demand_daily - table_power_input_data$mWh_generated),
+tibble("Maximum deviation" =max(table_power_input_data$mWh_demand_daily - table_power_input_data$mWh_generated),
        "Maximum deviation date" = table_power_input_data[which.max(max(table_power_input_data$mWh_demand_daily - 
                                                                          table_power_input_data$mWh_generated)),]$date) %>% 
     kbl(caption = "Maximum difference in power demand and total power generation") %>%
     kable_classic(full_width = F, html_font = "Times new roman")
 
 
-    tibble(Type = "Temperature",
-           Minimum  = min(texas_temperature_avg$temp_avg),
-           Max      = max(texas_temperature_avg$temp_avg),
-           "25% - percentile" = quantile(texas_temperature_avg$temp_avg, 0.25)))  %>% 
-  kbl(caption = "Summary statistics of power generaton and power demand in Texas (from 2018-07)") %>%
-    kable_classic(full_width = F, html_font = "Times new roman")
-
-
-table_data <- data.frame("Minmum", "Max", "Type")
-demand_data_daily %>% 
-  mutate(
-    "Minimum_demand" = min(mWh_demand_daily),
-    "25% - percentil" = quantile(mWh_demand_daily, .25)
-  ) %>%  unique()
-
-unemployment_train  %>% 
-    mutate(month = lubridate::month(date))  %>%
-    group_by(month)  %>% 
-    rename(Month = month) %>% 
-    summarise( 
-        Min = min(unemployed),
-        "25%-percentil" = quantile(unemployed, 0.25),
-        Mean = mean(unemployed),
-        Median = median(unemployed),
-        "75%entil" = quantile(unemployed, 0.75),
-        Max = max(unemployed)) %>% 
-    kbl(caption = "Summary statistics of unemployment level in US") %>%
-    kable_classic(full_width = F, html_font = "Times new roman")
                   
 ```
+
+The temperatures are below are averages taken from three weather stations dispersed around the state of Texas. 
+
+```{r, echo = TRUE, include=TRUE}
+# Minimum, 25%-percentile, Mean, Median, 75%-percentile and Maximum by month
+
+# Create table data
+
+table_power_input_data <- demand_data_daily %>% filter(date > "2018-07-01") %>% 
+  left_join(generation_daily %>% filter(type == "total"), by = c("date")) %>% 
+  filter(!is.na(mWh_generated))
+
+
+
+
+temperature_table_data <- texas_temperature %>% filter(!is.na(temp_max))
+# Remove clear outliers
+temperature_table_data %<>% filter(!temp_min < -40)
+
+  
+tibble("Average temperature" = mean(texas_temperature_avg$temp_avg),
+       "Max average temperature" = max(texas_temperature_avg$temp_avg),
+       "Max average temperature date" = texas_temperature_avg[which.max(texas_temperature_avg$temp_avg), ]$date,
+       "Minimum average temperature" = min(texas_temperature_avg$temp_avg),
+       "Minimum average temperature date" = texas_temperature_avg[which.min(texas_temperature_avg$temp_avg), ]$date, 
+       "Absolute maximum temperature" = max(temperature_table_data$temp_max), 
+       "Absolute maximum temperature date" = temperature_table_data[which.max(temperature_table_data$temp_max),]$date,
+       "Absolute minimum temperature"       = min(temperature_table_data$temp_min),
+       "Absolute minimum temperature date" = temperature_table_data[which.min(temperature_table_data$temp_min),]$date)   %>% 
+  kbl(caption = "Summary temperature statistics") %>%
+    kable_classic(full_width = F, html_font = "Times new roman")
+
+
+                  
+```
+
+
 
 
 

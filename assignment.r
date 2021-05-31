@@ -35,6 +35,10 @@ key <- "81a7388709d31bb149eb1cc9c7eba736"
 
 ## Generation data
 
+texas_power_prices      <- getEIA(ID = "ELEC.PRICE.TX-ALL.M", key = key) %>% as.data.frame()
+
+texas_gas_prices        <- getEIA(ID = "NG.N3035TX3.M", key = key) %>%  as.data.frame()
+
 texas_nuclear_generation <- getEIA(ID = "EBA.TEX-ALL.NG.NUC.HL", key = key) %>% as.data.frame()
 
 texas_gas_generation <- getEIA(ID ="EBA.TEX-ALL.NG.NG.HL" , key = key) %>% as.data.frame()
@@ -54,6 +58,22 @@ texas_generation <- getEIA(ID = "EBA.TEX-ALL.NG.HL", key = key) %>% as.data.fram
 
 ## Demand data
 texas_demand <- getEIA(ID = "EBA.TEX-ALL.D.HL", key = key) %>% as.data.frame()
+
+
+
+# Power prices in texas
+texas_power_prices %<>% 
+  mutate(date = lubridate::ymd(rownames(texas_power_prices))) %>% 
+  rename("cents_kWh" = colnames(texas_power_prices)[1]) %>% 
+  dplyr::select(date, cents_kWh)
+rownames(texas_power_prices) <- seq(1,nrow(texas_power_prices))
+  
+# Gas prices
+
+texas_gas_prices %<>%  mutate(date = lubridate::ymd(rownames(texas_gas_prices))) %>% 
+  rename("dollar_thousand_cubic" = colnames(texas_gas_prices)[1]) %>% 
+  dplyr::select(date, dollar_thousand_cubic)
+rownames(texas_gas_prices) <- seq(1,nrow(texas_gas_prices))
 
 
 ### Weather data:
@@ -396,12 +416,51 @@ average_lower_temperatures_bf_crisis %>%
 ############################ Forecasts testing #################################
 ################################################################################
 
-## Univariate models
+# Split into training
+
+# ARIMA optimal fit
+
+# Lower temperatures
+
+
+# 2011 minimum temperatures
+
+
+# Training dataset 
+demand_train <- demand_data_daily %>% 
+  filter(date > "2019-12-15" & date < "2020-01-31")
+
+demand_test <- demand_data_daily %>% filter(year(date) == 2020 &
+                                            month(date) == 2)
+
+
+## Stationarity tests
+
+unitroot_kpss(diff(demand_train$mWh_demand_daily)) 
+tseries::adf.test(diff(demand_train$mWh_demand_daily))
+
+demand_train$mWh_demand_daily <- difference(demand_train$mWh_demand_daily)
+demand_train %<>% filter(!is.na(mWh_demand_daily))
+# Reject stationarity - need for differencing
+
+
+# Optimal univariate model
+fit_arima_uni <- demand_train %>% 
+  as_tsibble(index = date) %>% model(arima_fit = ARIMA(mWh_demand_daily, 
+                                                           stepwise = FALSE,
+                                                           approximation = FALSE))
+
+
+### Evaluation 
+
+fc_arima_uni <- forecast(h = 30 )
 
 
 
 # Dynamic regression model
+'
 
+'
 
 # 2011 temperatures
 
