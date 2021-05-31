@@ -313,7 +313,7 @@ loess_texas_temperature_bf_crisis <- msir::loess.sd(x = as.numeric(texas_tempera
 
 loess_texas_temperature_bf_crisis <- msir::loess.sd(x = as.numeric(texas_temperature_average_feb$day), 
                                                     y = texas_temperature_average_feb$temp_avg,
-                                                    span = 0.1,
+                                                    span = 0.5,
                                                     nsigma = 2.576)
 
 
@@ -514,14 +514,6 @@ fit_arima_temperature_demand <- train_demand_temp %>%
                                    approximation = FALSE))
 
 
-# 2011 temperatures as newdata
-
-temperature_2011 <- texas_temperature_avg %>% 
-  filter(date > "2011-01-15" &
-           date < "2011-02-14") %>% 
-  mutate(date = seq(ymd("2020-02-01"), ymd("2020-02-29"), by = "days")) %>% 
-  as_tsibble(index = date)
-
 
 # Forecast
 
@@ -546,7 +538,6 @@ fc_arima_temperature_demand %>%
 MASE(.resid = test_demand_temp$mWh_demand_daily-fc_arima_temperature_demand$.mean, .train = train_demand_temp$mWh_demand_daily, .period = 7)
 
 
-fc_arima_temperature_demand %>% accuracy(test_demand_temp %>% as_tsibble())
 
 # 2021- can we predict the peak demand? 
 
@@ -560,11 +551,10 @@ temperature_2011_2021 <- texas_temperature_avg %>%
 
 
 
-# Temperature arima sim
+###### Temperature arima sim ########################################
 #################################################################
 arima_temperature_2011 <- texas_temperature_avg %>% filter(year(date) == 2011 &
-                                                             (month(date) == 1 |
-                                                                month(date) == 2)) %>% 
+                                                                month(date) == 2) %>% 
   as_tsibble(index = date)
 fit_arima_temperature <- arima_temperature_2011 %>% model(arima_temperature = ARIMA(temp_avg,
                                                                                     stepwise = FALSE,
@@ -596,7 +586,30 @@ temperature_sim <- data.frame(date = seq(ymd("2021-02-01"), ymd("2021-03-13"), b
 
 
 
+simulate_temperature <- function(df) {
+  #'Simulates 
+  #'@df : input temperature dataframe
+}
+
+
+
+
+
+
 #save(somewhat_extreme_sim, file = "Data/extreme_sim.Rdata")
+
+##################### Using lower percentile temperatures ##########################
+
+lower_percentile_temperature_2020 <- texas_temperature_bf_crisis %>% 
+  filter(month(date) == 1 &
+         year(date) == 2000) %>% 
+  dplyr::select(date, lower) %>% 
+  rename(temp_avg = "lower") %>% 
+  mutate(date = seq(ymd("2021-01-01"), ymd("2021-01-31"), by = "days")) %>% 
+  as_tsibble(index = date)
+  
+
+
 
 # Four days
 temperature_2011_2021 <- texas_temperature_avg %>% 
@@ -619,7 +632,7 @@ fit_2021_arima_temperature_demand <- train_demand_temp_2021   %>%
 
 
 fc_arima_temperature_demand_2021 <- fit_2021_arima_temperature_demand %>% 
-  forecast(new_data = temperature_2011_2021)
+  forecast(new_data = lower_percentile_temperature_2020)
 
 
 
