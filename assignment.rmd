@@ -134,6 +134,9 @@ tibble("Average temperature" = mean(texas_temperature_avg$temp_avg),
 ```
 
 
+In the few periods in which the flow of power to customers were not interrrupted, the prices rose in tandem with the shortage of power generation. Cases of several thousand dollar electricity bills were not uncommon
+
+
 
 
 

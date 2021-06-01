@@ -14,6 +14,7 @@ library(tidyverse)
 library(magrittr)
 library(lubridate)
 library(x13binary)
+library(stats)
 library(seasonal)
 
 #setwd("G:/Dokumenter/Google drive folder/NHH/Master/ENE434/Term assignment/repo")
@@ -186,33 +187,15 @@ rownames(demand_data) <- seq(1, nrow(demand_data))
 # Compute daily demand
 demand_data_daily <- demand_data %>% 
   group_by(date) %>% 
-  summarise(mWh_demand_daily = sum(mWh_demand))
+  summarise(mWh_demand_daily = mean(mWh_demand))
 
 
 generation_daily <- generation_data %>% 
   group_by(date, type) %>% 
-  summarise(mWh_generated = sum(mWh_generated),
+  summarise(mWh_generated = mean(mWh_generated),
             type = type) %>% 
   unique()
 
-
-
-
-
-
-### Descriptive statistics ####
-
-
-
-#### Descriptive plots  #### 
-
-
-generation_daily %>%
-  filter(type == "total") %>% 
-  ggplot(aes(x = date, y = mWh_generated)) +
-  geom_point()
-  
-  
 
 
 
@@ -553,10 +536,12 @@ temperature_2011_2021 <- texas_temperature_avg %>%
 
 ###### Temperature arima sim ########################################
 #################################################################
-arima_temperature_2011 <- texas_temperature_avg %>% filter(year(date) == 2011 &
+arima_temperature_2011 <- temperature_2011_2021 %>% filter(year(date) == 2011 &
                                                                 month(date) == 2) %>% 
   as_tsibble(index = date)
-fit_arima_temperature <- arima_temperature_2011 %>% model(arima_temperature = ARIMA(temp_avg,
+
+
+fit_arima_temperature <- temperature_2011_2021 %>% model(arima_temperature = ARIMA(temp_avg,
                                                                                     stepwise = FALSE,
                                                                                     approximation = FALSE))
 
@@ -565,19 +550,20 @@ ar_terms <- (fit_arima_temperature %>%
                filter(str_detect(term,"ar")))$estimate %>% 
   c(.)
 
-sma_terms <- (fit_arima_temperature %>% coefficients 
-              %>% filter(str_detect(term, "sma")))$estimate %>% 
+ma_terms <- (fit_arima_temperature %>% coefficients 
+              %>% filter(str_detect(term, "ma")))$estimate %>% 
   c(.)
-arima_sim_model <- list(order = c(4, 1, 0), 
+arima_sim_model <- list(order = fit_arima_temperature$arima_temperature[[1]]$fit$spec[1:3] %>% 
+                          t() %>% c(.), 
                         ar = ar_terms, 
-                        sma = sma_terms)
+                        ma = ma_terms)
 
 sigma <- sd(residuals(fit_arima_temperature)$.resid)
 
-sim_arima_temperature <- arima.sim(n = 40, 
-                                   model = arima_sim_model,
+sim_arima_temperature <- arima.sim(model = arima_sim_model,
+                                   n = 30,
                                    sd = sigma)
-sim_arima_temperature %>% plot()
+
 
 
 temperature_sim <- data.frame(date = seq(ymd("2021-02-01"), ymd("2021-03-13"), by = "day"),
@@ -586,9 +572,35 @@ temperature_sim <- data.frame(date = seq(ymd("2021-02-01"), ymd("2021-03-13"), b
 
 
 
-simulate_temperature <- function(df) {
-  #'Simulates 
+simulate_temperature <- function(fit, n  = 30) {
+  #'Generates an optimized arima fit of based on the input dataframe
+  #'on 'variable'. Based on the coefficients, AR and SMA orders, return
+  #'a simulated ARIMA series
   #'@df : input temperature dataframe
+  #'@variable: variable of df which is to be fitted
+  
+  ar_terms <- (fit_arima_temperature %>% 
+                 coefficients %>% 
+                 filter(str_detect(term,"ar")))$estimate %>% 
+    c(.)
+  
+  ma_terms <- (fit_arima_temperature %>% coefficients 
+               %>% filter(str_detect(term, "ma")))$estimate %>% 
+    c(.)
+  arima_sim_model <- list(order = fit_arima_temperature$arima_temperature[[1]]$fit$spec[1:3] %>% 
+                            t() %>% c(.), 
+                          ar = ar_terms, 
+                          ma = ma_terms)
+  
+  sigma <- sd(residuals(fit_arima_temperature)$.resid)
+  
+  sim_arima_temperature <- arima.sim(model = arima_sim_model,
+                                     n = 30,
+                                     sd = sigma)
+  temperature_sim = data.frame(date = seq(ymd("2021-02-01"), ymd("2021-03-13"), by = "day"),
+                                temp_avg = sim_arima_temperature) %>% 
+                                as_tsibble(index = date)
+  return(temperature_sim)
 }
 
 
