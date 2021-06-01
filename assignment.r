@@ -541,129 +541,24 @@ texas_temperature_avg %>%
          day = day(date)) %>% 
   group_by(month, year) %>% 
   summarise(avg_temp_month = mean(temp_avg)) %>% 
-  ggplot() +
-  geom_col(aes(x = year, y = avg_temp_month, col = year)) +
-  scale_fill_hp_d(option = "DracoMalfoy") +
+  ggplot(aes(x = year, y = avg_temp_month, fill = year)) +
+  geom_col() +
+  scale_fill_hp(option = "LunaLovegood") +
   facet_wrap(~month) +
-  theme_bw() +
   labs(title = "Mean monthly temperature for the period 2000-2021",
        subtitle = "in degrees celsius",
        ylab = "Monthly average temperature in celsius",
-       xlab = "Year")
-
-
-
-###### Temperature arima sim ########################################
-#################################################################
-arima_temperature_2011 <- texas_temperature_avg %>% filter(year(date) == 2011 &
-                                                                month(date) == 2) %>% 
-  as_tsibble(index = date)
-
-unitroot_kpss(temperature_2011_2021$temp_avg) 
-
-ggtsdisplay(temperature_2011_2021$temp_avg, 
-            plot.type = "partial", 
-            lag.max = 24, 
-            theme = theme_bw(),
-            main = "Non-differenced temperature data from 2011-01-16:2011-02-14")
-
-fit_arima_temperature <- temperature_2011_2021 %>% model(arima_temperature = ARIMA(temp_avg,
-                                                                                    stepwise = FALSE,
-                                                                                    approximation = FALSE))
-
-Residuals <- augment(fit_arima_temperature)$.innov
-ggtsdisplay(Residuals, 
-            plot.type = "histogram", 
-            lag.max = 24, 
-            theme = theme_bw(),
-            main = paste("Residuals of ", 
-                         fit_arima_temperature$arima_temperature, 
-                         "model"))
-
-
-simulate_temperature <- function(fit, days  = 30, startdate = "2020-02-01") {
-  #'Generates an optimized arima fit of based on the input dataframe
-  #'on 'variable'. Based on the coefficients, AR and SMA orders, return
-  #'a simulated ARIMA series
-  #'@df : input temperature dataframe
-  #'@variable: variable of df which is to be fitted
-  
-  ar_terms = (fit_arima_temperature %>% 
-                 coefficients %>% 
-                 filter(str_detect(term,"ar")))$estimate %>% 
-    c(.)
-  
-  ma_terms = (fit_arima_temperature %>% coefficients 
-               %>% filter(str_detect(term, "ma")))$estimate %>% 
-    c(.)
-  arima_sim_model = list(order = fit_arima_temperature$arima_temperature[[1]]$fit$spec[1:3] %>% 
-                            t() %>% c(.), 
-                          ar = ar_terms, 
-                          ma = ma_terms)
-  
-  sigma = sd(residuals(fit_arima_temperature)$.resid)
-  
-  sim_arima_temperature = arima.sim(model = arima_sim_model,
-                                     n = days,
-                                     sd = sigma)
-  temperature_sim = data.frame(date = seq(from = ymd(startdate), length.out = days, by = "day"),
-                                temp_avg = sim_arima_temperature) %>% 
-                                as_tsibble(index = date)
-  return(temperature_sim)
-}
-
-
-forecast_sim <- function(ts, fit, days = 30, startdate = "2020-02-01", n = 100) {
-  #'
-  #'@ts: timeseries or tsibble object of demand
-  
-  arima_sim_temperature = simulate_temperature(fit, days, startdate)
-  
-  fit_demand = ts  %>% 
-    model(arima_dynamic_demand = ARIMA(mWh_demand_daily ~ temp_avg))
-  fc_demand = fit_demand %>% forecast(new_data = arima_sim_temperature)
-  return (fc_demand)
-  
-}
-
-simulate_temperature(fit_arima_temperature) %>% autoplot()
-
-test <- forecast_sim(train_demand_temp_2021,fit_arima_temperature )
-test %>% autoplot()
-
-
-## Peak generation
-
-max_generation <- (generation_daily %>% filter(type == "total") %>% 
-  arrange(desc(mWh_generated)))[1,]$mWh_generated
-
-max_generation <- 56000
-
-## Any forecasted daily demand over estimated max_generation 
-
-demand_exceeded <- data.frame("run_nr" = seq(1, 1000), 
-                              exceed = FALSE,
-                              max_demand = 0)
-for(i in 1:12) {
-  fc_sim = forecast_sim(ts = train_demand_temp_2021, fit = fit_arima_temperature )
-  
-  max_demand = max(fc_sim$.mean)
-  demand_exceeded[i, "max_demand"] <- max_demand
-  if (max_demand > max_generation)  demand_exceeded[i, "exceed"] <- TRUE
-}
-
-
-demand_exceeded %>% 
-  summarise(count = sum(exceed, na.rm = TRUE),
-            mean  = mean(max_demand),
-            max   = max(max_demand)) %>% 
-  kbl(caption = "Results ") %>%
-  kable_classic(full_width = F, html_font = "Times new roman")
+       xlab = "Year") +
+  theme_bw() + 
+  theme(
+    strip.background = element_rect(fill = "grey20", color = "grey80", size = 1),
+    strip.text = element_text(colour = "white")
+  )
 
 
 
 
-#save(somewhat_extreme_sim, file = "Data/extreme_sim.Rdata")
+
 
 ##################### Using lower percentile temperatures ##########################
 
@@ -688,7 +583,7 @@ temperature_2011_2021 <- texas_temperature_avg %>%
 
 train_demand_temp_2021 <- demand_data_daily %>% 
   left_join(texas_temperature_avg, by = "date") %>% 
-  filter(date > "2020-12-15" & date < "2021-01-15") %>% 
+  filter(date >= "2020-12-01" & date < "2021-02-01") %>% 
   as_tsibble(index = date)
   
 

@@ -258,12 +258,49 @@ Based on the the last cold wave data, we will perform an arima simulation to fin
 ### Temperature averages
 
 
+texas_temperature_avg %>% 
+  mutate(year = year(date),
+         month = month(date, label = TRUE),
+         day = day(date)) %>% 
+  group_by(month, year) %>% 
+  summarise(avg_temp_month = mean(temp_avg)) %>% 
+  ggplot(aes(x = year, y = avg_temp_month, fill = year)) +
+  geom_col() +
+  scale_fill_hp(option = "LunaLovegood") +
+  facet_wrap(~month) +
+  labs(title = "Mean monthly temperature for the period 2000-2021",
+       subtitle = "in degrees celsius",
+       ylab = "Monthly average temperature in celsius",
+       xlab = "Year") +
+  theme_bw() + 
+  theme(
+    strip.background = element_rect(fill = "grey20", color = "grey80", size = 1),
+    strip.text = element_text(colour = "white")
+  )
 
 
 
 
 
+```
 
 
+
+
+```{r, echo = TRUE, include=TRUE, fig.width= 12, fig.height = 7}
+# facet plot of temperature
+
+facet_data <- generation_daily %>% 
+  filter(type %in% c("nuclear", "gas", "wind") &
+         date > "2020-12-01" & date < "2021-03-01")
+
+facet_data %>% 
+  filter(date > "2021-02-7") %>% 
+  ggplot() +
+  geom_line(aes(date, y = temp_avg , col = "temp"), data = nuclear_data %>% 
+              left_join(texas_temperature_avg, by = "date") %>% 
+              filter(date > "2021-02-7")) +
+  geom_line(aes(x = date,  y = mWh_generated, col = type)) +
+  theme_bw()
 
 ```
