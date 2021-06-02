@@ -89,7 +89,7 @@ arima_simulation <- function(fit,
                                     sd = sigma)
   
   return( 
-    data.frame(date = seq(from = ymd(startdate), length.out = days, by = "day"),
+    data.frame(date = seq(from = ymd(startdate), length.out = length(sim_arima), by = "day"),
               variable = sim_arima ) %>% 
       mutate(variable = variable + constant_term + rnorm(n = 1, mean = 0, sd(sim_arima)))  %>% 
       as_tsibble(index = date)) 
@@ -171,13 +171,15 @@ demand_exceeded %>%
 #### FIT GARCH simulation model
 
 nuclear_data <- generation_daily %>% 
-  filter(type == "nuclear" &
-         year(date) == 2021 & month(date) == 2)
+  dplyr::filter(type == "nuclear" &
+         (year(date) == 2021 || year(date ==2011)) & 
+           month(date) == 2)
 
 
 nuclear_data <- generation_daily %>% 
   filter(type == "nuclear" &
-           year(date) == 2021)
+         date  >= "2021-01-15" &
+         date  < "2021-03-01")
 
 
 
@@ -237,14 +239,15 @@ sim_ugarch <- ugarchsim(fit_ugarch, n.sim = 28, n.start = 0, startMethod = "samp
 
 
 
-garch_sim <- function(fit, df, days = 28, startdate = "2021-02-01") {
+garch_sim <- function(fit, df, days = 20, startdate = "2021-02-01") {
   #'
   #'@fit: fitted arima model
   #'@days: 
-  arma_order <- fit[[1]][[1]]$fit$spec[1:3] %>% t(.) %>% c(.)
+  arma_order <- fit[[1]][[1]]$fit$spec[1:3] %>% dplyr::select(p,q) %>% 
+    t(.) %>% c(.)
   spec_ugarch = ugarchspec(
-    mean.model <- list((armaOrder = arma_order)),
-    variance.model= list(garchOrder=c(1,1)))
+    mean.model <- list(armaOrder = arma_order, include.mean = TRUE),
+    variance.model= list(model="sGARCH", garchOrder=c(1,1)))
   
   fit_ugarch = ugarchfit(data = df$mWh_generated, spec = spec_ugarch, out.sample = days)
   sim_ugarch = ugarchsim(fit_ugarch, 
@@ -279,9 +282,11 @@ ugarchsim(fit_ugarch, n.sim = 28, n.start = 0, startMethod = "sample", m.sim = 1
 
 arima_simulation(fit_nuclear_arima, days = 28, startdate = "2021-02-01")
 
-arima_simulation(fit_nuclear_arima) %>% tibble() %>% 
-  mutate(date = seq(ymd("2021-02-01"), length.out = 30, by = "day")) %>% 
-  as_tsibble() %>% 
-  autoplot()
+arima_simulation(fit_nuclear_arima) %>% autoplot()
+
+
+
+
+## Add 
 
 
