@@ -8,9 +8,14 @@ demand_temp_2021 <- demand_data_daily %>%
   as_tsibble(index = date)
 
 
+arima_temperature_2011 <- texas_temperature_avg %>% 
+  filter(date > "2011-01-16" &
+           date < "2011-02-14") %>% 
+  mutate(date = seq(ymd("2021-02-01"), ymd("2021-02-28"), by = "days")) %>% 
+  as_tsibble(index = date)
 
 
-arima_temperature_2011 <- texas_temperature_avg %>% filter(year(date) == 2011 &
+arima_temperature_2011 <- temperature_2011_2021 %>% filter(year(date) == 2011 &
                                                              month(date) == 2) %>% 
   as_tsibble(index = date)
 
@@ -22,9 +27,12 @@ ggtsdisplay(temperature_2011_2021$temp_avg,
             theme = theme_bw(),
             main = "Non-differenced temperature data from 2011-01-16:2011-02-14")
 
-fit_arima_temperature <- temperature_2011_2021 %>% model(arima_temperature = ARIMA(temp_avg,
-                                                                                   stepwise = FALSE,
-                                                                                   approximation = FALSE))
+
+## Fit arima series on 2011 weather data
+fit_arima_temperature <- arima_temperature_2011 %>% 
+  model(arima_temperature = ARIMA(temp_avg,
+                                  stepwise = FALSE,
+                                  approximation = FALSE))
 
 Residuals <- augment(fit_arima_temperature)$.innov
 ggtsdisplay(Residuals, 
@@ -36,71 +44,95 @@ ggtsdisplay(Residuals,
                          "model"))
 
 
-simulate_temperature <- function(fit, days  = 30, startdate = "2020-02-01") {
+arima_simulation <- function(fit,
+                             days  = 30, 
+                             startdate = "2020-02-01") 
+  {
   #'Generates an optimized arima fit of based on the input dataframe
   #'on 'variable'. Based on the coefficients, AR and SMA orders, return
   #'a simulated ARIMA series
   #'@df : input temperature dataframe
-  #'@variable: variable of df which is to be fitted
   
-  ar_terms = (fit_arima_temperature %>% 
+  ar_terms = (fit %>% 
                 coefficients %>% 
-                filter(str_detect(term,"ar")))$estimate %>% 
+                dplyr::filter(stringr::str_detect(term,"ar")))$estimate %>% 
     c(.)
   
-  ma_terms = (fit_arima_temperature %>% coefficients 
-              %>% filter(str_detect(term, "ma")))$estimate %>% 
+  ma_terms = (fit %>% 
+                coefficients  %>% 
+                dplyr::filter(stringr::str_detect(term, "ma")))$estimate %>% 
     c(.)
-  arima_sim_model = list(order = fit_arima_temperature$arima_temperature[[1]]$fit$spec[1:3] %>% 
+  
+  constant_term = (fit %>% coefficients %>% 
+                     dplyr::filter(stringr::str_detect(term, "constant")))$estimate %>% 
+    c(.)
+  arima_sim_model = list(order = fit[[1]][[1]]$fit$spec[1:3] %>% 
                            t() %>% c(.), 
                          ar = ar_terms, 
                          ma = ma_terms)
   
-  sigma = sd(residuals(fit_arima_temperature)$.resid)
+  sigma = sd(residuals(fit)$.resid)
   
-  sim_arima_temperature = arima.sim(model = arima_sim_model,
+  sim_arima = arima.sim(model = arima_sim_model,
                                     n = days,
                                     sd = sigma)
-  temperature_sim = data.frame(date = seq(from = ymd(startdate), length.out = days, by = "day"),
-                               temp_avg = sim_arima_temperature) %>% 
-    as_tsibble(index = date)
-  return(temperature_sim)
+  
+  return( 
+    data.frame(date = seq(from = ymd(startdate), length.out = days, by = "day"),
+              variable = sim_arima + constant_term) %>% 
+            as_tsibble(index = date)
+    )
 }
 
 
-forecast_sim <- function(ts, fit, days = 30, startdate = "2020-02-01", n = 100) {
-  #'
+arima_simulation(fit_arima_temperature) %>% plot()
+
+forecast_sim <- function(ts, 
+                         fit, 
+                         days = 30, 
+                         startdate = "2020-02-01",
+                         n = 100) 
+  {
+  #' Function that performs a dynamic arima forecast based on a fitted 
+  #' arima series. 
   #'@ts: timeseries or tsibble object of demand
   
-  arima_sim_temperature = simulate_temperature(fit, days, startdate)
-  
+  arima_sim = arima_simulation(fit, days, startdate)
   fit_demand = ts  %>% 
-    model(arima_dynamic_demand = ARIMA(mWh_demand_daily ~ temp_avg))
-  fc_demand = fit_demand %>% forecast(new_data = arima_sim_temperature)
+    model(arima_dynamic_demand = ARIMA(mWh_demand_daily~variable,
+                                       stepwise = TRUE,
+                                       approximation = FALSE))
+  fc_demand = fit_demand %>% forecast(new_data = arima_sim)
   return (fc_demand)
   
 }
 
-simulate_temperature(fit_arima_temperature) %>% autoplot()
 
-test <- forecast_sim(train_demand_temp_2021,fit_arima_temperature )
+
+
+
+demand_temp_2021 %<>% 
+  rename("variable" = temp_avg)
+
+
+test <- forecast_sim(demand_temp_2021,fit_arima_temperature)
 test %>% autoplot()
 
 
 ## Peak generation
 
-max_generation <- (generation_daily %>% filter(type == "total") %>% 
+max_generation <- (generation_daily %>% dplyr::filter(type == "total") %>% 
                      arrange(desc(mWh_generated)))[1,]$mWh_generated
 
 
 
 ## Any forecasted daily demand over estimated max_generation 
 
-demand_exceeded <- data.frame("run_nr" = seq(1, 100), 
+demand_exceeded <- data.frame("run_nr" = seq(1, 1000), 
                               exceed = FALSE,
                               max_demand = 0)
-for(i in 1:100) {
-  fc_sim = forecast_sim(ts = train_demand_temp_2021, fit = fit_arima_temperature )
+for(i in 1:1000) {
+  fc_sim = forecast_sim(ts = demand_temp_2021, fit = fit_arima_temperature )
   
   max_demand = max(fc_sim$.mean)
   demand_exceeded[i, "max_demand"] <- max_demand
@@ -138,8 +170,60 @@ fit_nuclear_arima <- nuclear_data %>%
                               stepwise = FALSE,
                               approximation = FALSE))
 
-ugarchspec(mean.model = (armaOrder = )
-  variance.model = )
+arma_order <- c(0,0,3)
 
+
+nuclear_data %<>% ts()
+
+fit_nuclear_garch = garchFit(~arma(0,3) + garch(1,1), data = nuclear_data$mWh_generated, trace=F)
+
+garchFit(~arma(1,1) + garch(1,1), data = cons_ts["returns"], trace = F)
+
+garchSpec <- garchSpec(model = list(mu = 5124.0109630 ,
+                              ar = c()
+                              ma = c(0.5934401 ,1,0.2694950 ),
+                              omega = 4.4782909 ,
+                              alpha = 1,
+                              beta = 0.3129629 ))
+
+
+
+nuclear_garch_spec <- garchSpec(model = list(mu = 5124.0109630,
+                                             ma = c(0.5934401 ,1 ,0.2694950),
+                                             beta = 0.3129629,
+                                             omega = 4.4782909))
+
+sim_nuclear_garch <- garchSim(nuclear_garch_spec@model, n = 30)
+sim_nuclear_garch %>% plot()
+
+
+spec = garchSpec(model = list(alpha = c(0.2, 0.4), beta = 0))
+garchSim(spec, n = 10)
+
+
+
+
+## ugarch sim
+
+varModel <- list(model = "sGARCH", garchOrder = garchOrder)
+spec_ugarch <- ugarchspec(mean.model <- list((armaOrder = arma_order)),
+           variance.model= list(model="fGARCH", garchOrder=c(1,1)))
+
+fit_ugarch <- ugarchfit(data = nuclear_data$mWh_generated, spec = spec_ugarch, out.sample = 30)
+
+sim_ugarch <- ugarchsim(fit_ugarch, n.sim = 30, n.start = 0, m.sim = 1)
+sim_ugarch @simulation$seriesSim %>% plot()
+
+
+
+## F garch
+
+
+
+
+
+## Try out arima simulation
+
+nuclear_sim <- arima_simulation(fit_nuclear_arima)
 
 
