@@ -272,8 +272,8 @@ simulation_period <- seq(ymd("2021-01-15"), length.out = 45, by = "day")
 
 sim_type <- function(generation_type, sim_period,
                      fc_length = 15, start_date = "2021-02-01",
+                     alteration_amount = 0,
                      replace = FALSE,
-                     subtract_from = "gas",
                      alteration_amount = 5000) {
   #'
   #'@generation_type : string name of power generation type
@@ -295,10 +295,6 @@ sim_type <- function(generation_type, sim_period,
                                               fc_length = fc_length, start_date = start_date) 
   }
   
-  else if(replace && generation_type == subtract_from) { garch_simulation <- garch_sim(fit = arima_fit, df = type_df %>% 
-                                                mutate(mWh_generated = mWh_generated - alteration_amount), 
-                                              fc_length = fc_length, start_date = start_date) 
-  }
   
   else {
     garch_simulation <- garch_sim(fit = arima_fit, df = type_df, 
@@ -314,7 +310,7 @@ sim_type <- function(generation_type, sim_period,
 sim_all_sources <- function(sim_period = simulation_period,
                             fc_length = 15, start_date = "2021-02-01",
                             subtract_from = "gas", replace = FALSE,
-                            alteration_amount = 5000,) {
+                            alteration_amount = 5000) {
   #' 
   generation_types <- generation_daily %>%  
     filter(type != "total") %>% 
@@ -322,30 +318,12 @@ sim_all_sources <- function(sim_period = simulation_period,
     summarise(type = type) %>% unique() 
   generation_types <-  generation_types$type %>% c(.)
   
-  print("jepp1")
-  if ((generation_types[1] == subtract_from) && replace) {
-    print("jepp2")
-    simulation_output = tibble(date = seq(ymd(start_date), length.out = fc_length, by = "day"),
-                               mWh_generated  = sim_type(
-                                 replace = TRUE,
-                                 alteration_amount = alteration_amount,
-                                 generation_type = generation_types[1], sim_period, fc_length, start_date)$mWh_generated,
-                               type = generation_types[1])
-  }
-  else {
-    simulation_output = tibble(date = seq(ymd(start_date), length.out = fc_length, by = "day"),
-         mWh_generated  = sim_type(generation_type = generation_types[1], 
-                                   sim_period = sim_period, 
-                                   fc_length = fc_length, 
-                                   start_date = start_date,)$mWh_generated,
-         type = generation_types[1]) 
-  }
-  
-  generation_types <- generation_types[2:length(generation_types)]
+  simulation_output = NULL
+
   
   
   for (generation_type in generation_types) {
-    if (generation_type == subtract_from && replace) {
+    if ((generation_type == subtract_from) && replace) {
       simulation_output %<>% bind_rows(simulation_output,
         tibble(date = seq(ymd(start_date), length.out = fc_length, by = "day"),
                mWh_generated  = sim_type(
@@ -388,7 +366,7 @@ sim_all_sources <- function(sim_period = simulation_period,
 sim_type(replace = TRUE, alteration_amount = 10000, generation_type = "wind", sim_period = simulation_period) %>% autoplot()
 
 
-simulation_all_output <- sim_all_sources(replace = TRUE, alteration_amount = 40000) 
+simulation_all_output <- sim_all_sources(replace = FALSE, alteration_amount = 400) 
 
 colnames(simulation_all_output) <- c("date", "mWh_generated", "type")
 
