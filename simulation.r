@@ -13,15 +13,12 @@ arima_temperature_2011 <- texas_temperature_avg %>%
            date < "2011-02-14") %>% 
   mutate(date = seq(ymd("2021-02-01"), ymd("2021-02-28"), by = "days")) %>% 
   as_tsibble(index = date)
-arima_temperature_2011 <- arima_temperature_2011 -5 
 
-arima_temperature_2011 <- texas_temperature_avg %>% filter(year(date) == 2011 &
-                                                             month(date) == 2) %>% 
-  as_tsibble(index = date)
 
-unitroot_kpss(temperature_2011_2021$temp_avg) 
 
-ggtsdisplay(temperature_2011_2021$temp_avg, 
+unitroot_kpss(arima_temperature_2011$temp_avg) 
+
+ggtsdisplay(arima_temperature_2011$temp_avg, 
             plot.type = "partial", 
             lag.max = 24, 
             theme = theme_bw(),
@@ -160,7 +157,9 @@ demand_exceeded %>%
             percentage = paste((count/n())*100, "%"),
             mean  = mean(max_demand),
             max   = max(max_demand)) %>% 
-  kbl(caption = "Results ") %>%
+  kbl(caption = "Forecasted simulated demand on 2011 temperatures ", align = "c") %>%
+  kable_paper(full_width = F) %>%
+  footnote(general  = "Based on 1000 simulations") %>% 
   kable_classic(full_width = F, html_font = "Times new roman")
 
 
@@ -305,7 +304,8 @@ ugarchsim(fit_ugarch, n.sim = 28, n.start = 0, startMethod = "sample", m.sim = 1
 
 
 # Assume observed demand values
-sim_all_sources <- function(days = 20, startdate = "2021-02-01") {
+sim_all_sources <- function(subtract_from = "gas", replace = TRUE, days = 20, startdate = "2021-02-01") {
+  #' 
   generation_types <- generation_daily %>%  # Excluding total
     filter(type != "total") %>% 
     group_by(type) %>% 
@@ -317,9 +317,18 @@ sim_all_sources <- function(days = 20, startdate = "2021-02-01") {
          mWh_generated  = 0 )
   
   for (generation_type in generation_types) {
-      type_df <- generation_daily %>% filter(type == generation_type &
-                                               date %in% simulation_period)
-      arima_fit <- type_df %>% model(arima_fit = ARIMA(mWh_generated,
+    type_df = generation_daily %>% filter(type == !!generation_type &
+                                            date %in% simulation_period)
+    
+     
+     print("type")
+     print(type_df)
+     
+     
+
+       type_df      %<>% as_tsibble(index = date)
+    
+      arima_fit = type_df %>% model(arima_fit = ARIMA(mWh_generated,
                                                        stepwise = FALSE,
                                                        approximation = FALSE))
       type_sim <- garch_sim(arima_fit, type_df, days, startdate)
@@ -332,6 +341,18 @@ sim_all_sources <- function(days = 20, startdate = "2021-02-01") {
   
 }
 
+sim_all_sources()
+
+
+
+type_df = generation_daily[generation_daily$type == generation_type 
+                           & generation_daily$date %in% simulation_period, ,] 
+
+
+
+
+
+# Check demand surpass
 
 
 

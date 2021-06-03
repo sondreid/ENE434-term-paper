@@ -10,6 +10,7 @@
 ### Libraries ###### 
 library(EIAdata)
 library(fpp3)
+library(forecast)
 library(tidyverse)
 library(magrittr)
 library(lubridate)
@@ -17,6 +18,7 @@ library(x13binary)
 library(stats)
 library(harrypotter)
 library(rugarch)
+library(kableExtra)
 library(seasonal)
 
 #setwd("G:/Dokumenter/Google drive folder/NHH/Master/ENE434/Term assignment/repo")
