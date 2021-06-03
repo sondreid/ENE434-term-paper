@@ -188,6 +188,12 @@ gas_data <- generation_daily %>%
 
 
 
+coal_data <- generation_daily %>% 
+  filter(type == "coal" &
+           date  >= "2021-01-15" &
+           date  < "2021-03-01")
+
+
 ## ARIMA fits"" 
 
 # Nuclear ###
@@ -201,9 +207,21 @@ fit_nuclear_arima <- nuclear_data %>%
 # Gas ###
 fit_gas_arima <- gas_data %>% 
   as_tsibble(index = date) %>% 
-  model(nuclear_arima = ARIMA(mWh_generated,
+  model(gas_arima = ARIMA(mWh_generated,
                               stepwise = FALSE,
                               approximation = FALSE))
+
+
+
+## Coal
+
+# Gas ###
+fit_coal_arima <- coal_data %>% 
+  as_tsibble(index = date) %>% 
+  model(coal_arima = ARIMA(mWh_generated,
+                              stepwise = FALSE,
+                              approximation = FALSE))
+
 
 
 
@@ -262,19 +280,16 @@ garch_sim <- function(fit, df, days = 20, startdate = "2021-02-01") {
   arma_order <- fit[[1]][[1]]$fit$spec[1:3] %>% dplyr::select(p,q) %>% 
     t(.) %>% c(.)
   spec_ugarch = ugarchspec(
-    mean.model <- list(armaOrder = arma_order, include.mean = TRUE),
+    mean.model <- list(armaOrder = arma_order,  include.mean = TRUE),
     variance.model= list(model="sGARCH", garchOrder=c(1,1)))
   
   fit_ugarch = ugarchfit(data = df$mWh_generated, spec = spec_ugarch, out.sample = days)
-  sim_ugarch = ugarchsim(fit_ugarch, 
-                         n.sim = days, 
-                         n.start = 0, 
-                         startMethod = "sample", 
-                         m.sim = 1)@simulation$seriesSim %>% 
-    tibble() %>% 
-    mutate(date = seq(ymd(startdate), length.out = days, by = "day")) %>% 
-    as_tsibble() %>% 
-  return()
+  return(tsibble(mWh_generated = ugarchsim(fit_ugarch, 
+                                          n.sim = days, 
+                                          n.start = 0, 
+                                          startMethod = "sample", 
+                                          m.sim = 1)@simulation$seriesSim,
+                date = seq(ymd(startdate), length.out = days, by = "day")))
 }
 
 
@@ -284,12 +299,12 @@ garch_sim(fit_nuclear_arima, nuclear_data) %>%
 
 
 # Gas sim
-
-
-
 garch_sim(fit_gas_arima, gas_data) %>% 
   autoplot()
 
+# Coal sim
+garch_sim(fit_coal_arima, coal_data) %>% 
+  autoplot()
 
 
 ugarchsim(fit_ugarch, n.sim = 28, n.start = 0, startMethod = "sample", m.sim = 1)@simulation$seriesSim %>% tibble() %>% 
@@ -304,44 +319,61 @@ ugarchsim(fit_ugarch, n.sim = 28, n.start = 0, startMethod = "sample", m.sim = 1
 
 
 # Assume observed demand values
-sim_all_sources <- function(subtract_from = "gas", replace = TRUE, days = 20, startdate = "2021-02-01") {
+sim_all_sources <- function(subtract_from = "gas", replace = TRUE, sim_length = 45, fc_length = 25, startdate = "2021-01-01") {
   #' 
-  generation_types <- generation_daily %>%  # Excluding total
+  generation_types <- generation_daily %>%  
     filter(type != "total") %>% 
     group_by(type) %>% 
-    summarise(type = type) %>% unique() %>% c(.) 
+    summarise(type = type) %>% unique() 
   
+  generation_types <-  generation_types$type %>% c(.)
   
   simulation_period = seq(ymd(startdate), length.out = days, by = "day")
-  simulation_output = tibble(date = simulation_period,
+  
+  simulation_output = tibble(date = seq(ymd(startdate), length.out = fc_length, by = "day"),
          mWh_generated  = 0 )
   
   for (generation_type in generation_types) {
-    type_df = generation_daily %>% filter(type == !!generation_type &
-                                            date %in% simulation_period)
+    print(generation_type)
+    type_df = generation_daily %>% 
+      filter(type == !!generation_type &
+             date %in% simulation_period) %>% 
+      as_tsibble(index = date)
     
-     
-     print("type")
-     print(type_df)
-     
-     
-
-       type_df      %<>% as_tsibble(index = date)
-    
-      arima_fit = type_df %>% model(arima_fit = ARIMA(mWh_generated,
+    arima_fit = type_df %>% model(arima_fit = ARIMA(mWh_generated,
                                                        stepwise = FALSE,
                                                        approximation = FALSE))
-      type_sim <- garch_sim(arima_fit, type_df, days, startdate)
-      simulation_output %<>% bind_rows(tibble(date = seq(ymd(startdate), length.out = days, by = "day"),
-                      type = generation_type,
-                      mWh_generated = garch_sim(fit, df, days, startdate)))
+    print(arima_fit %>% coefficients())
+    print(type_df)
+    type_sim = garch_sim(fit = arima_fit, df = type_df, days = fc_length, startdate = startdate)
+    simulation_output %<>% bind_rows(tibble(date = seq(ymd(startdate), length.out = fc_length, by = "day"),
+                                            type = generation_type,
+                                            mWh_generated = type_sim@simulation$seriesSim %>% tibble()))
+    
     
   }
   return (simulation_output)
   
 }
 
-sim_all_sources()
+simulation_period <- seq(ymd("2021-01-15"), length.out = 45, by = "day")
+
+sim_type <- function(generation_type, sim_period, fc_length = 15, startdate = "2021-02-01") {
+  type_df = generation_daily %>% 
+    filter(type == !!generation_type &
+             date %in% simulation_period) %>% 
+    as_tsibble(index = date)
+  arima_fit = type_df %>% model(arima_fit = ARIMA(mWh_generated,
+                                                  stepwise = FALSE,
+                                                  approximation = FALSE))
+  return(
+    garch_sim(fit = arima_fit, df = type_df, days = fc_length, startdate = startdate)
+  )
+}
+sim_type("gas", sim_period = simulation_period) %>% autoplot()
+
+
+sim_all_sources(fc_length  = 10)
 
 
 
