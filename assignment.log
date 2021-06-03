@@ -1,4 +1,4 @@
-This is pdfTeX, Version 3.141592653-2.6-1.40.22 (TeX Live 2021/W32TeX) (preloaded format=pdflatex 2021.4.11)  31 MAY 2021 20:58
+This is pdfTeX, Version 3.141592653-2.6-1.40.22 (TeX Live 2021/W32TeX) (preloaded format=pdflatex 2021.4.11)  3 JUN 2021 20:32
 entering extended mode
  restricted \write18 enabled.
  %&-line parsing enabled.
@@ -8,8 +8,8 @@ LaTeX2e <2020-10-01> patch level 4
 L3 programming layer <2021-02-18> (c:/Users/sondr/AppData/Roaming/TinyTeX/texmf
 -dist/tex/latex/base/article.cls
 Document Class: article 2020/04/10 v1.4m Standard LaTeX document class
-(c:/Users/sondr/AppData/Roaming/TinyTeX/texmf-dist/tex/latex/base/size10.clo
-File: size10.clo 2020/04/10 v1.4m Standard LaTeX file (size option)
+(c:/Users/sondr/AppData/Roaming/TinyTeX/texmf-dist/tex/latex/base/size12.clo
+File: size12.clo 2020/04/10 v1.4m Standard LaTeX file (size option)
 )
 \c@part=\count179
 \c@section=\count180
@@ -546,10 +546,15 @@ Package: makecell 2009/08/03 V0.1e Managing of Tab Column Heads and Cells
 \c@nlinenum=\count301
 \TeXr@lab=\toks33
 )
+(c:/Users/sondr/AppData/Roaming/TinyTeX/texmf-dist/tex/latex/etoolbox/etoolbox.
+sty
+Package: etoolbox 2020/10/05 v2.5k e-TeX tools for LaTeX (JAW)
+\etb@tempcnta=\count302
+)
 (c:/Users/sondr/AppData/Roaming/TinyTeX/texmf-dist/tex/latex/l3backend/l3backen
 d-pdftex.def
 File: l3backend-pdftex.def 2021-03-18 L3 backend support: PDF output (pdfTeX)
-\l__color_backend_stack_int=\count302
+\l__color_backend_stack_int=\count303
 \l__pdf_internal_box=\box68
 ) (./assignment.aux
 
@@ -558,24 +563,24 @@ LaTeX Warning: Label `tab:unnamed-chunk-2' multiply defined.
 )
 \openout1 = `assignment.aux'.
 
-LaTeX Font Info:    Checking defaults for OML/cmm/m/it on input line 122.
-LaTeX Font Info:    ... okay on input line 122.
-LaTeX Font Info:    Checking defaults for OMS/cmsy/m/n on input line 122.
-LaTeX Font Info:    ... okay on input line 122.
-LaTeX Font Info:    Checking defaults for OT1/cmr/m/n on input line 122.
-LaTeX Font Info:    ... okay on input line 122.
-LaTeX Font Info:    Checking defaults for T1/cmr/m/n on input line 122.
-LaTeX Font Info:    ... okay on input line 122.
-LaTeX Font Info:    Checking defaults for TS1/cmr/m/n on input line 122.
-LaTeX Font Info:    ... okay on input line 122.
-LaTeX Font Info:    Checking defaults for OMX/cmex/m/n on input line 122.
-LaTeX Font Info:    ... okay on input line 122.
-LaTeX Font Info:    Checking defaults for U/cmr/m/n on input line 122.
-LaTeX Font Info:    ... okay on input line 122.
-LaTeX Font Info:    Checking defaults for PD1/pdf/m/n on input line 122.
-LaTeX Font Info:    ... okay on input line 122.
-LaTeX Font Info:    Checking defaults for PU/pdf/m/n on input line 122.
-LaTeX Font Info:    ... okay on input line 122.
+LaTeX Font Info:    Checking defaults for OML/cmm/m/it on input line 120.
+LaTeX Font Info:    ... okay on input line 120.
+LaTeX Font Info:    Checking defaults for OMS/cmsy/m/n on input line 120.
+LaTeX Font Info:    ... okay on input line 120.
+LaTeX Font Info:    Checking defaults for OT1/cmr/m/n on input line 120.
+LaTeX Font Info:    ... okay on input line 120.
+LaTeX Font Info:    Checking defaults for T1/cmr/m/n on input line 120.
+LaTeX Font Info:    ... okay on input line 120.
+LaTeX Font Info:    Checking defaults for TS1/cmr/m/n on input line 120.
+LaTeX Font Info:    ... okay on input line 120.
+LaTeX Font Info:    Checking defaults for OMX/cmex/m/n on input line 120.
+LaTeX Font Info:    ... okay on input line 120.
+LaTeX Font Info:    Checking defaults for U/cmr/m/n on input line 120.
+LaTeX Font Info:    ... okay on input line 120.
+LaTeX Font Info:    Checking defaults for PD1/pdf/m/n on input line 120.
+LaTeX Font Info:    ... okay on input line 120.
+LaTeX Font Info:    Checking defaults for PU/pdf/m/n on input line 120.
+LaTeX Font Info:    ... okay on input line 120.
 
 (c:/Users/sondr/AppData/Roaming/TinyTeX/texmf-dist/tex/latex/epstopdf-pkg/epsto
 pdf-base.sty
@@ -588,7 +593,7 @@ df-sys.cfg
 File: epstopdf-sys.cfg 2010/07/13 v1.3 Configuration of (r)epstopdf for TeX Liv
 e
 ))
-Package hyperref Info: Link coloring OFF on input line 122.
+Package hyperref Info: Link coloring OFF on input line 120.
 
 (c:/Users/sondr/AppData/Roaming/TinyTeX/texmf-dist/tex/latex/hyperref/nameref.s
 ty
@@ -602,11 +607,11 @@ Package: refcount 2019/12/15 v3.6 Data extraction from label references (HO)
 ettitlestring.sty
 Package: gettitlestring 2019/12/15 v1.6 Cleanup title references (HO)
 )
-\c@section@level=\count303
+\c@section@level=\count304
 )
-LaTeX Info: Redefining \ref on input line 122.
-LaTeX Info: Redefining \pageref on input line 122.
-LaTeX Info: Redefining \nameref on input line 122.
+LaTeX Info: Redefining \ref on input line 120.
+LaTeX Info: Redefining \pageref on input line 120.
+LaTeX Info: Redefining \nameref on input line 120.
 (./assignment.out) (./assignment.out)
 \@outlinefile=\write4
 \openout4 = `assignment.out'.
@@ -630,12 +635,12 @@ LaTeX Info: Redefining \nameref on input line 122.
 * \topmargin=-37.0pt
 * \headheight=12.0pt
 * \headsep=25.0pt
-* \topskip=10.0pt
+* \topskip=12.0pt
 * \footskip=30.0pt
-* \marginparwidth=65.0pt
-* \marginparsep=11.0pt
+* \marginparwidth=44.0pt
+* \marginparsep=10.0pt
 * \columnsep=10.0pt
-* \skip\footins=9.0pt plus 4.0pt minus 2.0pt
+* \skip\footins=10.8pt plus 4.0pt minus 2.0pt
 * \hoffset=0.0pt
 * \voffset=0.0pt
 * \mag=1000
@@ -646,134 +651,201 @@ LaTeX Info: Redefining \nameref on input line 122.
 * (1in=72.27pt=25.4mm, 1cm=28.453pt)
 
 LaTeX Font Info:    Trying to load font information for OT1+lmr on input line 1
-24.
+22.
 (c:/Users/sondr/AppData/Roaming/TinyTeX/texmf-dist/tex/latex/lm/ot1lmr.fd
 File: ot1lmr.fd 2015/05/01 v1.6.1 Font defs for Latin Modern
 )
 LaTeX Font Info:    Trying to load font information for OML+lmm on input line 1
-24.
+22.
 (c:/Users/sondr/AppData/Roaming/TinyTeX/texmf-dist/tex/latex/lm/omllmm.fd
 File: omllmm.fd 2015/05/01 v1.6.1 Font defs for Latin Modern
 )
 LaTeX Font Info:    Trying to load font information for OMS+lmsy on input line 
-124.
+122.
 (c:/Users/sondr/AppData/Roaming/TinyTeX/texmf-dist/tex/latex/lm/omslmsy.fd
 File: omslmsy.fd 2015/05/01 v1.6.1 Font defs for Latin Modern
 )
 LaTeX Font Info:    Trying to load font information for OMX+lmex on input line 
-124.
+122.
 (c:/Users/sondr/AppData/Roaming/TinyTeX/texmf-dist/tex/latex/lm/omxlmex.fd
 File: omxlmex.fd 2015/05/01 v1.6.1 Font defs for Latin Modern
 )
 LaTeX Font Info:    External font `lmex10' loaded for size
-(Font)              <12> on input line 124.
+(Font)              <14.4> on input line 122.
 LaTeX Font Info:    External font `lmex10' loaded for size
-(Font)              <8> on input line 124.
+(Font)              <10> on input line 122.
 LaTeX Font Info:    External font `lmex10' loaded for size
-(Font)              <6> on input line 124.
-LaTeX Font Info:    Trying to load font information for U+msa on input line 124
+(Font)              <7> on input line 122.
+LaTeX Font Info:    Trying to load font information for U+msa on input line 122
 .
 (c:/Users/sondr/AppData/Roaming/TinyTeX/texmf-dist/tex/latex/amsfonts/umsa.fd
 File: umsa.fd 2013/01/14 v3.01 AMS symbols A
 )
-LaTeX Font Info:    Trying to load font information for U+msb on input line 124
+LaTeX Font Info:    Trying to load font information for U+msb on input line 122
 .
 (c:/Users/sondr/AppData/Roaming/TinyTeX/texmf-dist/tex/latex/amsfonts/umsb.fd
 File: umsb.fd 2013/01/14 v3.01 AMS symbols B
 )
 LaTeX Font Info:    Trying to load font information for T1+lmtt on input line 1
-53.
+61.
 (c:/Users/sondr/AppData/Roaming/TinyTeX/texmf-dist/tex/latex/lm/t1lmtt.fd
 File: t1lmtt.fd 2015/05/01 v1.6.1 Font defs for Latin Modern
-)
-LaTeX Font Info:    External font `lmex10' loaded for size
-(Font)              <10> on input line 187.
-LaTeX Font Info:    External font `lmex10' loaded for size
-(Font)              <7> on input line 187.
-LaTeX Font Info:    External font `lmex10' loaded for size
-(Font)              <5> on input line 187.
-
-Overfull \hbox (41.33786pt too wide) in paragraph at lines 187--196
- [][] 
- []
-
-[1
+) [1
 
 {c:/Users/sondr/AppData/Roaming/TinyTeX/texmf-var/fonts/map/pdftex/updmap/pdfte
 x.map}]
-Overfull \hbox (881.74832pt too wide) in paragraph at lines 260--267
+LaTeX Font Info:    External font `lmex10' loaded for size
+(Font)              <12> on input line 195.
+LaTeX Font Info:    External font `lmex10' loaded for size
+(Font)              <8> on input line 195.
+LaTeX Font Info:    External font `lmex10' loaded for size
+(Font)              <6> on input line 195.
+
+Overfull \hbox (118.78244pt too wide) in paragraph at lines 195--204
  [][] 
  []
-
-LaTeX Font Info:    Font shape `T1/lmtt/bx/n' in size <10> not available
-(Font)              Font shape `T1/lmtt/b/n' tried instead on input line 273.
-
-LaTeX Font Warning: Font shape `T1/lmtt/bx/it' in size <10> not available
-(Font)              Font shape `T1/lmtt/b/sl' tried instead on input line 273.
 
 [2pdfTeX warning (ext4): destination with the same identifier (name{table.1}) h
 as been already used, duplicate ignored
 <argument> ...shipout:D \box_use:N \l_shipout_box 
                                                   
-l.291 \end{Shaded}
+l.262 \end{Shaded}
                   pdfTeX warning (ext4): destination with the same identifier (
 name{table.2}) has been already used, duplicate ignored
 <argument> ...shipout:D \box_use:N \l_shipout_box 
                                                   
-l.291 \end{Shaded}
+l.262 \end{Shaded}
                   ]
-<assignment_files/figure-latex/unnamed-chunk-4-1.pdf, id=19, 469.755pt x 325.21
-5pt>
-File: assignment_files/figure-latex/unnamed-chunk-4-1.pdf Graphic file (type pd
-f)
-<use assignment_files/figure-latex/unnamed-chunk-4-1.pdf>
-Package pdftex.def Info: assignment_files/figure-latex/unnamed-chunk-4-1.pdf  u
-sed on input line 293.
-(pdftex.def)             Requested size: 469.75386pt x 325.2142pt.
-
-Underfull \hbox (badness 10000) in paragraph at lines 293--297
-[][]
+Overfull \hbox (1098.01657pt too wide) in paragraph at lines 268--275
+ [][] 
  []
+
+LaTeX Font Info:    Font shape `T1/lmtt/bx/n' in size <12> not available
+(Font)              Font shape `T1/lmtt/b/n' tried instead on input line 286.
+
+LaTeX Font Warning: Font shape `T1/lmtt/bx/it' in size <12> not available
+(Font)              Font shape `T1/lmtt/b/sl' tried instead on input line 286.
 
 [3pdfTeX warning (ext4): destination with the same identifier (name{table.3}) h
 as been already used, duplicate ignored
 <argument> ...shipout:D \box_use:N \l_shipout_box 
                                                   
-l.298 \begin{Shaded}
-                     <./assignment_files/figure-latex/unnamed-chunk-4-1.pdf>]
-<assignment_files/figure-latex/unnamed-chunk-5-1.pdf, id=31, 469.755pt x 325.21
+l.304 \end{Shaded}
+                  ]
+<assignment_files/figure-latex/unnamed-chunk-4-1.pdf, id=28, 469.755pt x 325.21
+5pt>
+File: assignment_files/figure-latex/unnamed-chunk-4-1.pdf Graphic file (type pd
+f)
+<use assignment_files/figure-latex/unnamed-chunk-4-1.pdf>
+Package pdftex.def Info: assignment_files/figure-latex/unnamed-chunk-4-1.pdf  u
+sed on input line 306.
+(pdftex.def)             Requested size: 469.75386pt x 325.2142pt.
+
+Overfull \hbox (17.62366pt too wide) in paragraph at lines 306--310
+[][]
+ []
+
+[4 <./assignment_files/figure-latex/unnamed-chunk-4-1.pdf>]
+<assignment_files/figure-latex/unnamed-chunk-5-1.pdf, id=38, 469.755pt x 325.21
 5pt>
 File: assignment_files/figure-latex/unnamed-chunk-5-1.pdf Graphic file (type pd
 f)
 <use assignment_files/figure-latex/unnamed-chunk-5-1.pdf>
 Package pdftex.def Info: assignment_files/figure-latex/unnamed-chunk-5-1.pdf  u
-sed on input line 330.
+sed on input line 349.
 (pdftex.def)             Requested size: 469.75386pt x 325.2142pt.
 
-Underfull \hbox (badness 10000) in paragraph at lines 330--333
+Overfull \hbox (17.62366pt too wide) in paragraph at lines 349--352
 [][]
  []
 
-[4]
-<assignment_files/figure-latex/unnamed-chunk-6-1.pdf, id=36, 469.755pt x 325.21
+[5 <./assignment_files/figure-latex/unnamed-chunk-5-1.pdf>]
+<assignment_files/figure-latex/unnamed-chunk-6-1.pdf, id=48, 469.755pt x 325.21
 5pt>
 File: assignment_files/figure-latex/unnamed-chunk-6-1.pdf Graphic file (type pd
 f)
 <use assignment_files/figure-latex/unnamed-chunk-6-1.pdf>
 Package pdftex.def Info: assignment_files/figure-latex/unnamed-chunk-6-1.pdf  u
-sed on input line 357.
+sed on input line 376.
 (pdftex.def)             Requested size: 469.75386pt x 325.2142pt.
-[5 <./assignment_files/figure-latex/unnamed-chunk-5-1.pdf>]
-<assignment_files/figure-latex/unnamed-chunk-7-1.pdf, id=46, 867.24pt x 505.89p
+
+Overfull \hbox (17.62366pt too wide) in paragraph at lines 376--377
+[][] 
+ []
+
+[6 <./assignment_files/figure-latex/unnamed-chunk-6-1.pdf>]
+<assignment_files/figure-latex/unnamed-chunk-7-1.pdf, id=58, 867.24pt x 505.89p
 t>
 File: assignment_files/figure-latex/unnamed-chunk-7-1.pdf Graphic file (type pd
 f)
 <use assignment_files/figure-latex/unnamed-chunk-7-1.pdf>
 Package pdftex.def Info: assignment_files/figure-latex/unnamed-chunk-7-1.pdf  u
-sed on input line 375.
+sed on input line 394.
 (pdftex.def)             Requested size: 469.75827pt x 274.02563pt.
-[6 <./assignment_files/figure-latex/unnamed-chunk-6-1.pdf>] [7 <./assignment_fi
-les/figure-latex/unnamed-chunk-7-1.pdf>] (./assignment.aux)
+
+Overfull \hbox (17.62807pt too wide) in paragraph at lines 394--395
+[][] 
+ []
+
+[7 <./assignment_files/figure-latex/unnamed-chunk-7-1.pdf>]
+Overfull \hbox (110.69527pt too wide) in paragraph at lines 430--430
+[]\T1/lmtt/m/n/12 ## `summarise()` has grouped output by 'month'. You can overr
+ide using the `.groups` argument.[] 
+ []
+
+<assignment_files/figure-latex/unnamed-chunk-8-1.pdf, id=69, 867.24pt x 505.89p
+t>
+File: assignment_files/figure-latex/unnamed-chunk-8-1.pdf Graphic file (type pd
+f)
+<use assignment_files/figure-latex/unnamed-chunk-8-1.pdf>
+Package pdftex.def Info: assignment_files/figure-latex/unnamed-chunk-8-1.pdf  u
+sed on input line 432.
+(pdftex.def)             Requested size: 469.75827pt x 274.02563pt.
+
+Overfull \hbox (17.62807pt too wide) in paragraph at lines 432--433
+[][] 
+ []
+
+[8 <./assignment_files/figure-latex/unnamed-chunk-8-1.pdf>] [9]
+<assignment_files/figure-latex/unnamed-chunk-10-1.pdf, id=84, 867.24pt x 578.16
+pt>
+File: assignment_files/figure-latex/unnamed-chunk-10-1.pdf Graphic file (type p
+df)
+<use assignment_files/figure-latex/unnamed-chunk-10-1.pdf>
+Package pdftex.def Info: assignment_files/figure-latex/unnamed-chunk-10-1.pdf  
+used on input line 541.
+(pdftex.def)             Requested size: 469.75827pt x 313.17216pt.
+
+Overfull \hbox (17.62807pt too wide) in paragraph at lines 541--542
+[][] 
+ []
+
+[10pdfTeX warning (ext4): destination with the same identifier (name{table.4}) 
+has been already used, duplicate ignored
+<argument> ...shipout:D \box_use:N \l_shipout_box 
+                                                  
+l.550 
+       <./assignment_files/figure-latex/unnamed-chunk-10-1.pdf>]
+LaTeX Font Info:    Trying to load font information for TS1+lmtt on input line 
+570.
+(c:/Users/sondr/AppData/Roaming/TinyTeX/texmf-dist/tex/latex/lm/ts1lmtt.fd
+File: ts1lmtt.fd 2015/05/01 v1.6.1 Font defs for Latin Modern
+) [11]
+<assignment_files/figure-latex/unnamed-chunk-12-1.pdf, id=101, 867.24pt x 578.1
+6pt>
+File: assignment_files/figure-latex/unnamed-chunk-12-1.pdf Graphic file (type p
+df)
+<use assignment_files/figure-latex/unnamed-chunk-12-1.pdf>
+Package pdftex.def Info: assignment_files/figure-latex/unnamed-chunk-12-1.pdf  
+used on input line 623.
+(pdftex.def)             Requested size: 469.75827pt x 313.17216pt.
+
+Overfull \hbox (17.62807pt too wide) in paragraph at lines 623--624
+[][] 
+ []
+
+[12 <./assignment_files/figure-latex/unnamed-chunk-12-1.pdf>] [13] (./assignmen
+t.aux)
 
 LaTeX Warning: There were multiply-defined labels.
 
@@ -781,24 +853,28 @@ Package rerunfilecheck Info: File `assignment.out' has not changed.
 (rerunfilecheck)             Checksum: D41D8CD98F00B204E9800998ECF8427E;0.
  ) 
 Here is how much of TeX's memory you used:
- 11915 strings out of 480954
- 175089 string characters out of 5905840
- 488024 words of memory out of 5000000
- 28893 multiletter control sequences out of 15000+600000
- 438107 words of font info for 66 fonts, out of 8000000 for 9000
+ 12286 strings out of 480954
+ 180482 string characters out of 5905840
+ 494065 words of memory out of 5000000
+ 29248 multiletter control sequences out of 15000+600000
+ 444723 words of font info for 70 fonts, out of 8000000 for 9000
  14 hyphenation exceptions out of 8191
- 71i,9n,74p,336b,354s stack positions out of 5000i,500n,10000p,200000b,80000s
-{c:/Users/sondr/AppData/Roaming/TinyTeX/texmf-dist/fonts/enc/dvips/lm/lm-ec.e
-nc}<c:/Users/sondr/AppData/Roaming/TinyTeX/texmf-dist/fonts/type1/public/lm/lmr
-10.pfb><c:/Users/sondr/AppData/Roaming/TinyTeX/texmf-dist/fonts/type1/public/lm
-/lmr17.pfb><c:/Users/sondr/AppData/Roaming/TinyTeX/texmf-dist/fonts/type1/publi
-c/lm/lmtko10.pfb><c:/Users/sondr/AppData/Roaming/TinyTeX/texmf-dist/fonts/type1
-/public/lm/lmtt10.pfb><c:/Users/sondr/AppData/Roaming/TinyTeX/texmf-dist/fonts/
-type1/public/lm/lmtti10.pfb>
-Output written on assignment.pdf (7 pages, 206591 bytes).
+ 71i,9n,74p,392b,467s stack positions out of 5000i,500n,10000p,200000b,80000s
+{c:/Users/sondr/AppData/Roaming/TinyTeX/texmf-dist/fonts/enc/dvips/lm/lm-ts1.
+enc}{c:/Users/sondr/AppData/Roaming/TinyTeX/texmf-dist/fonts/enc/dvips/lm/lm-ec
+.enc}<c:/Users/sondr/AppData/Roaming/TinyTeX/texmf-dist/fonts/type1/public/lm/l
+mbx10.pfb><c:/Users/sondr/AppData/Roaming/TinyTeX/texmf-dist/fonts/type1/public
+/lm/lmr10.pfb><c:/Users/sondr/AppData/Roaming/TinyTeX/texmf-dist/fonts/type1/pu
+blic/lm/lmr12.pfb><c:/Users/sondr/AppData/Roaming/TinyTeX/texmf-dist/fonts/type
+1/public/lm/lmr17.pfb><c:/Users/sondr/AppData/Roaming/TinyTeX/texmf-dist/fonts/
+type1/public/lm/lmtk10.pfb><c:/Users/sondr/AppData/Roaming/TinyTeX/texmf-dist/f
+onts/type1/public/lm/lmtko10.pfb><c:/Users/sondr/AppData/Roaming/TinyTeX/texmf-
+dist/fonts/type1/public/lm/lmtt12.pfb><c:/Users/sondr/AppData/Roaming/TinyTeX/t
+exmf-dist/fonts/type1/public/lm/lmtti10.pfb>
+Output written on assignment.pdf (13 pages, 312563 bytes).
 PDF statistics:
- 89 PDF objects out of 1000 (max. 8388607)
- 66 compressed objects within 1 object stream
- 11 named destinations out of 1000 (max. 500000)
- 21 words of extra memory for PDF output out of 10000 (max. 10000000)
+ 153 PDF objects out of 1000 (max. 8388607)
+ 113 compressed objects within 2 object streams
+ 19 named destinations out of 1000 (max. 500000)
+ 36 words of extra memory for PDF output out of 10000 (max. 10000000)
 

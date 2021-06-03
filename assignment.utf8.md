@@ -30,48 +30,7 @@ In this analysis I will look at.....
 
 The power generation and demand data used for this analysis is retrieved from the United States Energy Information Administration(EIA) and 
 
-```{r, echo = FALSE, include=FALSE}
 
-library(EIAdata)
-library(fpp3)
-library(forecast)
-library(tidyverse)
-library(magrittr)
-library(lubridate)
-library(x13binary)
-library(stats)
-library(harrypotter)
-library(rugarch)
-library(kableExtra)
-library(seasonal)
-`%notin%` <- Negate(`%in%`) #Adds  a custom inverse %in% function
-load(file = "Data/texas_data.Rdata")
-color_scheme <- c("black", "#EDA63A", "#5093F8",
-                  "#34eb89", "#9d45f5",  "#f5455c",
-                  "#0ac47d", "#b5070a", "#f57542") # General color scheme for plots 
-
-
-texas_temperature <- read.csv("Data/texas_temperature.csv") %>%
-  dplyr::select(NAME:TMIN) %>% 
-  rename(station = NAME,
-         date = DATE,
-         temp_avg = TAVG,
-         temp_min = TMIN,
-         temp_max = TMAX) %>% 
-  mutate(date = lubridate::ymd(date)) %>% 
-  dplyr::select(date, station, temp_avg, temp_min, temp_max)
-
-# Compose new dataframe where three station data is averaged
-texas_temperature_avg <- texas_temperature %>% group_by(date) %>% 
-  filter(!is.na(temp_avg)) %>% 
-  summarise(temp_avg = mean(temp_avg),
-            temp_min = min(temp_min), 
-            temp_max = max(temp_max)) 
-
-options(knitr.kable.NA = '')
-
-
-```
 
 
 <h2> 1. Data exploration </h2>
@@ -80,7 +39,8 @@ options(knitr.kable.NA = '')
 
 Unfortunately, the power generation data collected for this analysis only goes back to 2018 of july and as a result the table
 
-```{r, echo = TRUE, include=TRUE}
+
+```r
 # Minimum, 25%-percentile, Mean, Median, 75%-percentile and Maximum by month
 
 # Create table data
@@ -107,20 +67,48 @@ tibble(Type = "Power demand",
        "75% - percentile" = quantile(table_power_input_data$mWh_generated, 0.75)),) %>% 
   kbl(caption = "Summary statistics of power generaton and power demand in Texas (from 2018-07)") %>%
     kable_classic(full_width = F, html_font = "Times new roman")
+```
 
+\begin{table}
+
+\caption{\label{tab:unnamed-chunk-2}Summary statistics of power generaton and power demand in Texas (from 2018-07)}
+\centering
+\begin{tabular}[t]{l|r|r|l|l|r|r}
+\hline
+Type & Minimum & Max & Maximum date & Minimum date & 25\% - percentile & 75\% - percentile\\
+\hline
+Power demand & 32222.50 & 62018.08 & 2021-02-14 & 2018-10-21 & 37458.33 & 48935.04\\
+\hline
+Power generation & 32222.21 & 60828.08 & 2021-02-14 & 2018-10-21 & 37435.08 & 48767.54\\
+\hline
+\end{tabular}
+\end{table}
+
+```r
 tibble("Maximum deviation" =max(table_power_input_data$mWh_demand_daily - table_power_input_data$mWh_generated),
        "Maximum deviation date" = table_power_input_data[which.max(max(table_power_input_data$mWh_demand_daily - 
                                                                          table_power_input_data$mWh_generated)),]$date) %>% 
     kbl(caption = "Maximum difference in power demand and total power generation") %>%
     kable_classic(full_width = F, html_font = "Times new roman")
-
-
-                  
 ```
+
+\begin{table}
+
+\caption{\label{tab:unnamed-chunk-2}Maximum difference in power demand and total power generation}
+\centering
+\begin{tabular}[t]{r|l}
+\hline
+Maximum deviation & Maximum deviation date\\
+\hline
+1752.708 & 2018-07-02\\
+\hline
+\end{tabular}
+\end{table}
 
 The temperatures are below are averages taken from three weather stations dispersed around the state of Texas. 
 
-```{r, echo = TRUE, include=TRUE, fig.width= 12, fig.height = 2}
+
+```r
 # Minimum, 25%-percentile, Mean, Median, 75%-percentile and Maximum by month
 
 # Create table data
@@ -148,10 +136,20 @@ tibble("Average temperature" = mean(texas_temperature_avg$temp_avg),
        "Absolute minimum temperature date" = temperature_table_data[which.min(temperature_table_data$temp_min),]$date)   %>% 
   kbl(caption = "Summary temperature statistics") %>%
     kable_classic(full_width = F, html_font = "Times new roman")
-
-
-                  
 ```
+
+\begin{table}
+
+\caption{\label{tab:unnamed-chunk-3}Summary temperature statistics}
+\centering
+\begin{tabular}[t]{r|r|l|r|l|r|l|r|l}
+\hline
+Average temperature & Max average temperature & Max average temperature date & Minimum average temperature & Minimum average temperature date & Absolute maximum temperature & Absolute maximum temperature date & Absolute minimum temperature & Absolute minimum temperature date\\
+\hline
+19.27449 & 33.6 & 2011-08-02 & -11.4 & 2000-11-29 & 60 & 2005-01-29 & -28.3 & 2004-12-24\\
+\hline
+\end{tabular}
+\end{table}
 
 
 In the few periods in which the flow of power to customers were not interrrupted, the prices rose in tandem with the shortage of power generation. Cases of several thousand dollar electricity bills were not uncommon
@@ -163,7 +161,8 @@ In the few periods in which the flow of power to customers were not interrrupted
 
 
 Power generation and demand in february
-```{r, echo = TRUE, include=TRUE}
+
+```r
 ### Energy generation by source in february
 
 demand_data_daily  %>% 
@@ -181,13 +180,15 @@ demand_data_daily  %>%
   labs(title = "Demand vs power generation", subtitle = "in mWh",
        x = "Date", y = "mWh") +
   theme_bw()
-
 ```
+
+![](assignment_files/figure-latex/unnamed-chunk-4-1.pdf)<!-- --> 
 We can see that net generation exceeds in particular around February 14th, where ERCOT decided to shed load to preserve grid stability. 
 We will explore those days closer in the next plot.
 
 
-```{r, echo = TRUE, include=TRUE}
+
+```r
 ### Closer look at load sheds days
 
 #load_sheds <- data.frame(date = lubridate::ymd(c("2021-02-14")),
@@ -216,18 +217,21 @@ demand_data_daily  %>%
        x = "Date", y = "mWh") +
   theme_bw() +
   scale_colour_discrete("Colour of series:")
-  
-  
-  
-
+```
 
 ```
+## Scale for 'colour' is already present. Adding another scale for 'colour',
+## which will replace the existing scale.
+```
+
+![](assignment_files/figure-latex/unnamed-chunk-5-1.pdf)<!-- --> 
 By looking at the plot above we can see that the discrepenacy between power generation and demand b
 
 
 
 
-```{r, echo = TRUE, include=TRUE}
+
+```r
 ### Energy generation by source in february
 generation_daily  %>% 
   filter(month(date) == 2 & 
@@ -241,16 +245,16 @@ generation_daily  %>%
        x = "Date", y = "mWh") +
   theme_bw() +
   scale_colour_discrete("Type of generation")
-
-
-
-
-
-
-
+```
 
 ```
-```{r, echo = TRUE, include=TRUE, fig.width= 12, fig.height = 7}
+## Scale for 'colour' is already present. Adding another scale for 'colour',
+## which will replace the existing scale.
+```
+
+![](assignment_files/figure-latex/unnamed-chunk-6-1.pdf)<!-- --> 
+
+```r
 ### Temperature averages
 
 knitr::opts_chunk$set(fig.width=12, fig.height=8) 
@@ -262,20 +266,15 @@ texas_temperature_avg   %>%
        subtitle = "in degrees celsius",
        x = "Date", y = "Degrees celsius") +
   theme_bw() 
-
-
-
-
-
-
-
-
 ```
+
+![](assignment_files/figure-latex/unnamed-chunk-7-1.pdf)<!-- --> 
 
 Demand has changed a lot since 2000, and it begs to reason that choosing the last major cold wave gives a better representation of power demand in 2021. 
 Based on the the last cold wave data, we will perform an arima simulation to find whether the demand ofw
 
-```{r, echo = TRUE, include=TRUE, fig.width= 12, fig.height = 7}
+
+```r
 ### Temperature averages
 
 
@@ -298,13 +297,13 @@ texas_temperature_avg %>%
     strip.background = element_rect(fill = "grey20", color = "grey80", size = 1),
     strip.text = element_text(colour = "white")
   )
-
-
-
-
-
 ```
 
+```
+## `summarise()` has grouped output by 'month'. You can override using the `.groups` argument.
+```
+
+![](assignment_files/figure-latex/unnamed-chunk-8-1.pdf)<!-- --> 
 
 
 
@@ -315,8 +314,9 @@ texas_temperature_avg %>%
 
 
 
-```{r, echo = TRUE, include=TRUE}
 
+
+```r
 arima_temperature_2011 <- texas_temperature_avg %>% 
   filter(date > "2011-01-16" &
            date < "2011-02-14") %>% 
@@ -326,7 +326,11 @@ arima_temperature_2011 <- texas_temperature_avg %>%
 
 
 unitroot_kpss(arima_temperature_2011$temp_avg) 
+```
 
+```
+##   kpss_stat kpss_pvalue 
+##   0.2018554   0.1000000
 ```
 
 Simulation of power demand: 
@@ -341,7 +345,8 @@ Using temperatures from 2011, the year in which the Groundhog Day Blizzard hit t
 The plot below shows the residuals of observed temperatures of the cold peak in 2011. The PACF and ACF plot show, not surprisingly, some autocorrelation at lag 1, meaning that a given observation is correlated with the immediate previous observation. A KPSS test shows that the time series is sufficiently stationary that first order differencing is not necessary.
 
 
-```{r, echo = TRUE, include=TRUE}
+
+```r
 # facet plot of temperature
 
 arima_temperature_2011 <- texas_temperature_avg %>% 
@@ -355,7 +360,24 @@ arima_temperature_2011 <- texas_temperature_avg %>%
 unitroot_kpss(arima_temperature_2011$temp_avg) %>%
   kbl(caption = "Unitroot test on 2011 temperature data") %>%
     kable_classic(full_width = F, html_font = "Times new roman")
+```
 
+\begin{table}
+
+\caption{\label{tab:unnamed-chunk-10}Unitroot test on 2011 temperature data}
+\centering
+\begin{tabular}[t]{l|r}
+\hline
+  & x\\
+\hline
+kpss\_stat & 0.2018554\\
+\hline
+kpss\_pvalue & 0.1000000\\
+\hline
+\end{tabular}
+\end{table}
+
+```r
 ggtsdisplay(arima_temperature_2011$temp_avg, 
             plot.type = "partial", 
             lag.max = 24, 
@@ -363,25 +385,26 @@ ggtsdisplay(arima_temperature_2011$temp_avg,
             main = "Non-differenced temperature data from 2011-01-16:2011-02-14")
 ```
 
+![](assignment_files/figure-latex/unnamed-chunk-10-1.pdf)<!-- --> 
+
 
 The ARIMA() function provided in the fable r package allows us to iterate through all fitted arima models and choose the optimal model based on criterias such as Akakaike Information Criterion (AIC). The fitted ARIMA model will be passed to a custom arima simulation function, which outputs a generated series based on the coefficients and ARMA orders of the series. The series will closely resemble the observed time series, but will add needed randomness in the simulation. 
 
 
-```{r, echo = TRUE, include=TRUE}
+
+```r
 ############ Fit arima series on 2011 weather data#################
 fit_arima_temperature <- arima_temperature_2011 %>% 
   model(arima_temperature = ARIMA(temp_avg,
                                   stepwise = FALSE,
                                   approximation = FALSE))
-
 ```
 
 Two functions are created with the intention of generating a arima series and performing the forecast by use of a dynamic regression model. The plot below shows an example generated series producd by the arima.sim() function of the stat package. A quick glance at the plot shows a clear similarity with the actual observed
 series, and the temperature values generated seem plausible. 
 
-```{r, echo = TRUE, include=TRUE}
 
-
+```r
 arima_simulation <- function(fit,
                              days  = 30, 
                              start_date = "2021-02-01") 
@@ -444,9 +467,11 @@ arima_simulation(fit_arima_temperature) %>%
        subtitle = "on 2011 temperature time series",
        x = "Date", y = "Degrees celsius") +
   theme_bw() 
+```
 
+![](assignment_files/figure-latex/unnamed-chunk-12-1.pdf)<!-- --> 
 
-
+```r
 forecast_sim <- function(ts, 
                          fit, 
                          days = 30, 
@@ -465,6 +490,4 @@ forecast_sim <- function(ts,
   return (fc_demand)
   
 }
-
-
 ```

@@ -270,11 +270,9 @@ ugarchsim(fit_ugarch, n.sim = 28, n.start = 0, startMethod = "sample", m.sim = 1
 
 simulation_period <- seq(ymd("2021-01-15"), length.out = 45, by = "day")
 
-sim_type <- function(generation_type, sim_period,
+sim_type <- function(generation_type, sim_period = simulation_period,
                      fc_length = 15, start_date = "2021-02-01",
-                     alteration_amount = 0,
-                     replace = FALSE,
-                     alteration_amount = 5000) {
+                     alteration_amount = 0) {
   #'
   #'@generation_type : string name of power generation type
   #'@sim_period: sequence of dates which denotes the period of simulation
@@ -282,24 +280,20 @@ sim_type <- function(generation_type, sim_period,
   #'@start_date: start date of forcasting period
   type_df = generation_daily %>% 
     filter(type == !!generation_type &
-             date %in% simulation_period) %>% 
+             date %in% sim_period) %>% 
     as_tsibble(index = date)
   arima_fit = type_df %>% model(arima_fit = ARIMA(mWh_generated,
                                                   stepwise = TRUE,
                                                   approximation = TRUE))
   
+  garch_simulation <- garch_sim(fit = arima_fit, 
+                                df = type_df, 
+                                fc_length = fc_length,
+                                start_date = start_date)   %>% 
+    mutate(mWh_generated = case_when((mWh_generated + alteration_amount) <= 0 ~ 0,
+          (mWh_generated + alteration_amount) >= 0 ~ mWh_generated + alteration_amount)) 
 
-  if(replace && generation_type == "nuclear") { 
-    garch_simulation <- garch_sim(fit = arima_fit, df = type_df %>% 
-                                                mutate(mWh_generated = mWh_generated + alteration_amount), 
-                                              fc_length = fc_length, start_date = start_date) 
-  }
   
-  
-  else {
-    garch_simulation <- garch_sim(fit = arima_fit, df = type_df, 
-                    fc_length = fc_length, start_date = start_date)
-  }
   return(garch_simulation)
 }
 
@@ -310,7 +304,8 @@ sim_type <- function(generation_type, sim_period,
 sim_all_sources <- function(sim_period = simulation_period,
                             fc_length = 15, start_date = "2021-02-01",
                             subtract_from = "gas", replace = FALSE,
-                            alteration_amount = 5000) {
+                            alteration_amount = 5000,
+                            added_nuclear = 0) {
   #' 
   generation_types <- generation_daily %>%  
     filter(type != "total") %>% 
@@ -327,34 +322,39 @@ sim_all_sources <- function(sim_period = simulation_period,
       simulation_output %<>% bind_rows(simulation_output,
         tibble(date = seq(ymd(start_date), length.out = fc_length, by = "day"),
                mWh_generated  = sim_type(
-                 replace = TRUE,
-                 alteration_amount = alteration_amount,
-                 generation_type = generation_type, sim_period, fc_length, start_date)$mWh_generated,
+                 generation_type = generation_type, 
+                 sim_period = sim_period, fc_length = fc_length, 
+                 start_date = start_date,
+                 alteration_amount = -alteration_amount)$mWh_generated,
                type = generation_type)
       )
     }
-    
     else if (generation_type == "nuclear" && replace) {
       simulation_output %<>% bind_rows(simulation_output,
                                        tibble(date = seq(ymd(start_date), length.out = fc_length, by = "day"),
                                               mWh_generated  = sim_type(
-                                                replace = TRUE,
-                                                alteration_amount = alteration_amount,
-                                                generation_type = generation_type, sim_period, fc_length, start_date)$mWh_generated,
+                                                generation_type = generation_type, 
+                                                sim_period = sim_period,
+                                                fc_length = fc_length, start_date = start_date,
+                                                alteration_amount = alteration_amount)$mWh_generated + added_nuclear,
+                                              type = generation_type)
+      )
+    }
+    else {
+      simulation_output %<>% bind_rows(simulation_output,
+                                       tibble(date = seq(ymd(start_date), length.out = fc_length, by = "day"),
+                                              mWh_generated  = sim_type(
+                                                generation_type = generation_type, 
+                                                sim_period = sim_period, 
+                                                fc_length = fc_length, 
+                                                start_date = start_date,
+                                                alteration_amount = 0)$mWh_generated,
                                               type = generation_type)
       )
     }
     
-    else {
-      simulation_output %<>% bind_rows(simulation_output, 
-      tibble(date = seq(ymd(start_date), length.out = fc_length, by = "day"),
-             mWh_generated  = sim_type(generation_type, sim_period, fc_length, start_date)$mWh_generated,
-             type = generation_type)
-      )
-    }
-    
   }
-  return (simulation_output)
+  return (simulation_output %>% unique())
   
 }
 
@@ -363,10 +363,10 @@ sim_all_sources <- function(sim_period = simulation_period,
 
 
 
-sim_type(replace = TRUE, alteration_amount = 10000, generation_type = "wind", sim_period = simulation_period) %>% autoplot()
+sim_type(generation_type = "gas", alteration_amount = -500, fc_length = 19) %>% autoplot()
 
 
-simulation_all_output <- sim_all_sources(replace = FALSE, alteration_amount = 400) 
+simulation_all_output <- sim_all_sources(fc_length = 19, replace = TRUE, alteration_amount = 10000, added_nuclear = 20000)
 
 colnames(simulation_all_output) <- c("date", "mWh_generated", "type")
 
