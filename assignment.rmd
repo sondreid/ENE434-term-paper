@@ -40,7 +40,8 @@ library(seasonal)
 `%notin%` <- Negate(`%in%`) #Adds  a custom inverse %in% function
 load(file = "Data/texas_data.Rdata")
 color_scheme <- c("black", "#EDA63A", "#5093F8",
-                  "#34eb89", "#9d45f5",  "#f5455c") # General color scheme for plots 
+                  "#34eb89", "#9d45f5",  "#f5455c",
+                  "#0ac47d", "#b5070a", "#f57542") # General color scheme for plots 
 
 
 texas_temperature <- read.csv("Data/texas_temperature.csv") %>%
