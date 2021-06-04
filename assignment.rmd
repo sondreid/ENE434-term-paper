@@ -1,6 +1,6 @@
 ---
 title: 'Term paper ENE434: Texas Energy Crisis'
-subtitle: 'Candidate number: WRITE  '
+subtitle: 'Candidate number: 19'
 output:
   pdf_document: default
   word_document: default
@@ -8,11 +8,13 @@ output:
 
 
 abstract: This is an example abstract 
-geometry: margin=1in
+geometry: margin=0.5in
 fontsize: 12pt
 fig_caption: yes
 indent: true
 ---
+
+# The 2021 Texas Energy crisis: Exploratory simulation
   
 The Texas Energy crisis was a series of rolling power blackouts that resulted in billions of dollars worth of loss, and estimated 151 lives lost.
 A record cold wave hit the majority of mainland United States resulting in sustained temperatures well below 0 degrees celsius.
@@ -74,13 +76,13 @@ options(knitr.kable.NA = '')
 ```
 
 
-<h2> 1. Data exploration </h2>
+## 1. Data exploration 
 
 
 
 Unfortunately, the power generation data collected for this analysis only goes back to 2018 of july and as a result the table
 
-```{r, echo = TRUE, include=TRUE}
+```{r, echo = TRUE, include=TRUE, fig.width= 12, fig.height = 2}
 # Minimum, 25%-percentile, Mean, Median, 75%-percentile and Maximum by month
 
 # Create table data
@@ -93,24 +95,32 @@ table_power_input_data <- demand_data_daily %>% filter(date > "2018-07-01") %>%
 tibble(Type = "Power demand", 
        Minimum = min(table_power_input_data$mWh_demand_daily), 
        Max = max(table_power_input_data$mWh_demand_daily),
-       "Maximum date" = table_power_input_data[which.max(table_power_input_data$mWh_demand_daily),]$date,
-       "Minimum date" = table_power_input_data[which.min(table_power_input_data$mWh_demand_daily),]$date,
+       "Maximum date" = table_power_input_data[which.max(
+         table_power_input_data$mWh_demand_daily),]$date,
+       "Minimum date" = table_power_input_data[which.min(
+         table_power_input_data$mWh_demand_daily),]$date,
        "25% - percentile" = quantile(table_power_input_data$mWh_demand_daily, 0.25),
        "75% - percentile" = quantile(table_power_input_data$mWh_demand_daily, 0.75)) %>% 
   bind_rows(
     tibble(Type = "Power generation", 
        Minimum = min(table_power_input_data$mWh_generated), 
        Max = max(table_power_input_data$mWh_generated),
-       "Maximum date" = table_power_input_data[which.max(table_power_input_data$mWh_generated),]$date,
-       "Minimum date" = table_power_input_data[which.min(table_power_input_data$mWh_generated),]$date,
+       "Maximum date" = table_power_input_data[which.max
+                                               (table_power_input_data$mWh_generated),]$date,
+       "Minimum date" = table_power_input_data[which.min
+                                               (table_power_input_data$mWh_generated),]$date,
        "25% - percentile" = quantile(table_power_input_data$mWh_generated, 0.25),
        "75% - percentile" = quantile(table_power_input_data$mWh_generated, 0.75)),) %>% 
   kbl(caption = "Summary statistics of power generaton and power demand in Texas (from 2018-07)") %>%
-    kable_classic(full_width = F, html_font = "Times new roman")
+    kable_classic(full_width = F, html_font = "Times new roman") %>% 
+  column_spec(6, width = "5em") %>%
+  column_spec(7, width = "5em")
 
-tibble("Maximum deviation" =max(table_power_input_data$mWh_demand_daily - table_power_input_data$mWh_generated),
-       "Maximum deviation date" = table_power_input_data[which.max(max(table_power_input_data$mWh_demand_daily - 
-                                                                         table_power_input_data$mWh_generated)),]$date) %>% 
+tibble("Maximum deviation" =max(
+        table_power_input_data$mWh_demand_daily - table_power_input_data$mWh_generated),
+        "Maximum deviation date" = table_power_input_data[which.max(
+         max(table_power_input_data$mWh_demand_daily - 
+         table_power_input_data$mWh_generated)),]$date) %>% 
     kbl(caption = "Maximum difference in power demand and total power generation") %>%
     kable_classic(full_width = F, html_font = "Times new roman")
 
@@ -139,15 +149,29 @@ temperature_table_data %<>% filter(!temp_min < -40)
   
 tibble("Average temperature" = mean(texas_temperature_avg$temp_avg),
        "Max average temperature" = max(texas_temperature_avg$temp_avg),
-       "Max average temperature date" = texas_temperature_avg[which.max(texas_temperature_avg$temp_avg), ]$date,
+       "Max average temperature date" = texas_temperature_avg[which.max(
+                                        texas_temperature_avg$temp_avg), ]$date,
        "Minimum average temperature" = min(texas_temperature_avg$temp_avg),
-       "Minimum average temperature date" = texas_temperature_avg[which.min(texas_temperature_avg$temp_avg), ]$date, 
+       "Minimum average temperature date" = texas_temperature_avg[which.min(
+                                         texas_temperature_avg$temp_avg), ]$date, 
        "Absolute maximum temperature" = max(temperature_table_data$temp_max), 
-       "Absolute maximum temperature date" = temperature_table_data[which.max(temperature_table_data$temp_max),]$date,
+       "Absolute maximum temperature date" = temperature_table_data[which.max(
+                                             temperature_table_data$temp_max),]$date,
        "Absolute minimum temperature"       = min(temperature_table_data$temp_min),
-       "Absolute minimum temperature date" = temperature_table_data[which.min(temperature_table_data$temp_min),]$date)   %>% 
+       "Absolute minimum temperature date" = temperature_table_data[which.min(
+                                           temperature_table_data$temp_min),]$date)   %>% 
   kbl(caption = "Summary temperature statistics") %>%
-    kable_classic(full_width = F, html_font = "Times new roman")
+    kable_classic(full_width = F, html_font = "Times new roman")  %>% 
+  column_spec(1, width = "5em") %>%
+  column_spec(2, width = "5em") %>% 
+  column_spec(3, width = "5em") %>%
+  column_spec(4, width = "5em") %>% 
+  column_spec(5, width = "5em") %>%
+  column_spec(6, width = "5em") %>% 
+  column_spec(7, width = "5em") %>%
+  column_spec(8, width = "5em")
+
+
 
 
                   
@@ -222,7 +246,7 @@ demand_data_daily  %>%
 
 
 ```
-By looking at the plot above we can see that the discrepenacy between power generation and demand b
+By looking at the plot above we can see that the clear discrepenacy between power generation and demand, in particular the period directly leading up to the deciscion to perfom load shedding to preserve the grid.
 
 
 
@@ -250,18 +274,30 @@ generation_daily  %>%
 
 
 ```
-```{r, echo = TRUE, include=TRUE, fig.width= 12, fig.height = 7}
+```{r, echo = TRUE, include=TRUE }
 ### Temperature averages
 
-knitr::opts_chunk$set(fig.width=12, fig.height=8) 
+#knitr::opts_chunk$set(fig.width=12, fig.height=8) 
 texas_temperature_avg   %>% 
-  ggplot(aes(x = date, y = temp_avg)) + 
-  geom_line() +
-  scale_colour_manual(values = color_scheme) +
-  labs(title = "Average daily temperatures",
-       subtitle = "in degrees celsius",
+  filter(date > "2021-01-15" & date < "2021-03-01")  %>% 
+  mutate(year= year(date),
+         date = seq(ymd("2021-01-16"), ymd("2021-02-28"), by  = "day")) %>%
+  dplyr::select(year, date, temp_avg) %>% 
+  bind_rows(
+    texas_temperature_avg %>% 
+      filter(date > "2011-01-15" & date < "2011-03-01") %>% 
+      mutate(year= year(date),
+             date = seq(ymd("2021-01-16"), ymd("2021-02-28"), by  = "day")) %>%
+     dplyr::select(year, date, temp_avg)) %>% 
+  mutate(year = as.factor(year)) %>% 
+  ggplot() + 
+  geom_line(aes(x = date, y = temp_avg, col = year)) +
+  scale_colour_manual(values = c("black", "orange")) +
+  labs(title = "Jan/February temperatures in degrees celsius",
+       subtitle = "in 2011/2021",
        x = "Date", y = "Degrees celsius") +
-  theme_bw() 
+  theme_bw() +
+  scale_colour_discrete("Year observed")
 
 
 
@@ -273,7 +309,7 @@ texas_temperature_avg   %>%
 ```
 
 Demand has changed a lot since 2000, and it begs to reason that choosing the last major cold wave gives a better representation of power demand in 2021. 
-Based on the the last cold wave data, we will perform an arima simulation to find whether the demand ofw
+Based on the the last cold wave data, we will perform an arima simulation to find whether the demand 
 
 ```{r, echo = TRUE, include=TRUE, fig.width= 12, fig.height = 7}
 ### Temperature averages
@@ -350,6 +386,15 @@ arima_temperature_2011 <- texas_temperature_avg %>%
   mutate(date = seq(ymd("2021-02-01"), ymd("2021-02-28"), by = "days")) %>% 
   as_tsibble(index = date)
 
+## Join observed demand and temperatures in a dataframe
+demand_temp_2021 <- demand_data_daily %>% 
+  left_join(texas_temperature_avg, by = "date") %>% 
+  filter(date >= "2020-12-01" & date < "2021-02-01") %>% 
+  as_tsibble(index = date)
+
+
+demand_temp_2021 %<>% 
+  rename("variable" = temp_avg)
 
 
 unitroot_kpss(arima_temperature_2011$temp_avg) %>%
@@ -380,7 +425,7 @@ Two functions are created with the intention of generating a arima series and pe
 series, and the temperature values generated seem plausible. 
 
 ```{r, echo = TRUE, include=TRUE}
-
+options(width = 200)
 
 arima_simulation <- function(fit,
                              days  = 30, 
@@ -468,3 +513,133 @@ forecast_sim <- function(ts,
 
 
 ```
+
+A forecast is made based on the fitted values of a multivariate dynamic regression model. The generated series is assumed to be the future value of temperature, and passed as new data to compose the forecast. Below is an example forecast made by the  forecast_sim function. It calls the arima_simulation and uses its output as a basis for the assumed future temperatures. 
+
+```{r, echo = TRUE, include=TRUE}
+
+set.seed(15)
+forecast_sim(demand_temp_2021,fit_arima_temperature, days = 30, start_date = "2021-02-01") %>% 
+  ggplot(aes(x = date, y = .mean)) +
+  geom_line() +
+  scale_colour_manual(values = color_scheme) +
+  labs(title = "Example dynamic forecast of demand",
+       subtitle = "based on simulated temperatures and observed demand in 2021",
+       x = "Date", y = "mWh demand") +
+  theme_bw() 
+
+
+```
+
+
+
+
+
+Every value of forecasted peak demand is recorded and checked whether it surpasses the assumed peak power generation. The simulation is conducted 1000 times, and leaves us with a fully populated dataframe. Based on this, some probability of observing demand surpassing the assumed peak demand. 
+
+```{r, echo = TRUE, include=TRUE}
+
+set.seed(1234)
+max_generation <- (generation_daily %>% dplyr::filter(type == "total") %>% 
+                     arrange(desc(mWh_generated)))[1,]$mWh_generated
+
+
+tibble("Max power generation" = max_generation ) %>% 
+  kbl(caption = "Observed max generation 2021") %>% 
+  footnote(general  = "in mWh") %>% 
+  kable_classic(full_width = F, html_font = "Times new roman")
+```
+
+Table 5 shows the 
+
+
+```{r, echo = TRUE, include=TRUE}
+
+## Any forecasted daily demand over estimated max_generation 
+
+demand_exceeded <- data.frame("run_nr" = seq(1, 1000), 
+                              exceed = FALSE,
+                              max_demand = 0)
+for(i in 1:1000) {
+  fc_sim = forecast_sim(ts = demand_temp_2021, fit = fit_arima_temperature )
+  
+  max_demand = max(fc_sim$.mean)
+  demand_exceeded[i, "max_demand"] <- max_demand
+  if (max_demand > max_generation)  demand_exceeded[i, "exceed"] <- TRUE
+}
+
+
+
+
+demand_exceeded %>% 
+  summarise(count = sum(exceed, na.rm = TRUE), 
+            "Percentage" = paste((count/n())*100, "%"),
+            "Mean demand observed"  = mean(max_demand),
+            "Max demand observed"   = max(max_demand)) %>% 
+  rename("Number of simulations exceeding peak generation" = count) %>% 
+  kbl(caption = "Forecasted simulated demand on 2011 temperatures ", align = "c") %>%
+  kable_paper(full_width = F) %>%
+  footnote(general  = "Based on 1000 simulations") %>% 
+  kable_classic(full_width = F, html_font = "Times new roman")
+
+
+
+```
+
+The table above (table 6) is the result of running the simulation for a 1000 runs, and recording max demand as well as the number of simulated runs in which demand surpasses assumed peak power generation. A total of 45 simulation runs forecasted demands which surpasses peak generation at least one day, amounting to 4.5 % of all simulation runs. The mean observed is way below the assumed peak generation of 60880 mWh, some simulation runs yields forecasted demand way above the peak generation limit, maxing at 74769 mWh. The percentage of cases where demand exceeded power generation may not seem high, but considering the  catastrophic consequences which a potential grid failure implies, the risk may be considerable. 
+
+A note should be made about the temperatures observed in early february 2011. Although the temperatures observed were abnormally low, they were not however extreme. As shown in a previous chart, the temperatures observed in 2021 were unique not in its record low temperatures but rather the duration in which the low temperatures persisted. The simulation results, though based on rough assumptions, does not seem exaggerated based on its assumed temperature data. 
+
+
+In summary, some evidence has provided that a real to the power grid could have been foreseen two weeks ahead of the power failure. This analysis has used data available at February 1 2021. 
+
+
+
+## Simulation of power generation: Experiments with Nuclear power generation. 
+
+As we have previously seen, the extent to which reductions in power output occurred, various greatly from power source to power source. Although several wind power critics released fiery remarks about the misfortune of wind power, it is now clear that wind were only partly to blame and that early estimates overestimated the reduction in wind output (Texas Tribune 2021).  The capacity factor of a power generation source describes the relation of potential power production (its nameplate value) and the actual average power output. Of all power sources. 
+
+
+```{r, echo = TRUE, include=TRUE}
+
+#knitr::include_graphics("CapacityFactor2020.png")
+
+![EIA (2020) Capacity factors for various power sources based on data in the United States in 2020.](!CapacityFactor2020.png)
+
+```
+
+
+```{r, echo = TRUE, include=TRUE}
+
+garch_sim <- function(fit, df, fc_length = 20, start_date = "2021-02-01") {
+  #'
+  #'@fit: fitted arima model
+  #'@fc_length: 
+  arma_order <- fit[[1]][[1]]$fit$spec[1:3] %>% dplyr::select(p,q) %>% 
+    t(.) %>% c(.)
+  spec_ugarch = ugarchspec(
+    mean.model <- list(armaOrder = arma_order,  include.mean = TRUE),
+    variance.model= list(model="sGARCH", garchOrder=c(1,1)))
+  
+  fit_ugarch = ugarchfit(data = df$mWh_generated, spec = spec_ugarch, out.sample = fc_length)
+  return(tsibble(mWh_generated = ugarchsim(fit_ugarch, 
+                                          n.sim = fc_length, 
+                                          n.start = 0, 
+                                          startMethod = "sample", 
+                                          m.sim = 1)@simulation$seriesSim,
+                date = seq(ymd(start_date), length.out = fc_length, by = "day")))
+}
+
+
+
+
+
+```
+
+
+
+
+## References
+
+
+Hyndman, R. J., & Athanasopoulos, G. (2021). Forecasting: Principles and Practice (3rd edition). https://otexts.com/fpp3/

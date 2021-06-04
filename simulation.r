@@ -149,7 +149,6 @@ for(i in 1:100) {
 }
 
 
-demand_exceeded
 
 
 demand_exceeded %>% 
