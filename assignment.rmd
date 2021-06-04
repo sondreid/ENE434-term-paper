@@ -183,30 +183,6 @@ In the few periods in which the flow of power to customers were not interrrupted
 
 
 
-
-
-
-Power generation and demand in february
-```{r, echo = TRUE, include=TRUE}
-### Energy generation by source in february
-
-demand_data_daily  %>% 
-  filter(month(date) == 2 & 
-           year(date) == 2021) %>% 
-  ggplot() +
-  geom_line(aes(x = date, y = mWh_demand_daily, col = "mWh demand")) +
-  geom_line(aes(x = date, mWh_generated, col = "mWh generated" ),
-            data = generation_daily %>% filter(
-              month(date) == 2 &
-              year(date) == 2021 &
-              type == "total"
-            )) +
-  scale_colour_manual(values = color_scheme) +
-  labs(title = "Demand vs power generation", subtitle = "in mWh",
-       x = "Date", y = "mWh") +
-  theme_bw()
-
-```
 We can see that net generation exceeds in particular around February 14th, where ERCOT decided to shed load to preserve grid stability. 
 We will explore those days closer in the next plot.
 
@@ -557,7 +533,7 @@ Table 5 shows the
 
 ## Any forecasted daily demand over estimated max_generation 
 
-demand_exceeded <- data.frame("run_nr" = seq(1, 1000), 
+'demand_exceeded <- data.frame("run_nr" = seq(1, 1000), 
                               exceed = FALSE,
                               max_demand = 0)
 for(i in 1:1000) {
@@ -567,8 +543,9 @@ for(i in 1:1000) {
   demand_exceeded[i, "max_demand"] <- max_demand
   if (max_demand > max_generation)  demand_exceeded[i, "exceed"] <- TRUE
 }
-
-
+'
+load(file = "demand_exceed.Rdata")
+#save(demand_exceeded, file = "demand_exceed.Rdata")
 
 
 demand_exceeded %>% 
@@ -588,7 +565,7 @@ demand_exceeded %>%
 
 The table above (table 6) is the result of running the simulation for a 1000 runs, and recording max demand as well as the number of simulated runs in which demand surpasses assumed peak power generation. A total of 45 simulation runs forecasted demands which surpasses peak generation at least one day, amounting to 4.5 % of all simulation runs. The mean observed is way below the assumed peak generation of 60880 mWh, some simulation runs yields forecasted demand way above the peak generation limit, maxing at 74769 mWh. The percentage of cases where demand exceeded power generation may not seem high, but considering the  catastrophic consequences which a potential grid failure implies, the risk may be considerable. 
 
-A note should be made about the temperatures observed in early february 2011. Although the temperatures observed were abnormally low, they were not however extreme. As shown in a previous chart, the temperatures observed in 2021 were unique not in its record low temperatures but rather the duration in which the low temperatures persisted. The simulation results, though based on rough assumptions, does not seem exaggerated based on its assumed temperature data. 
+A note should be made about the temperatures observed in early February 2011. Although the temperatures observed were abnormally low, they were not however extreme. As shown in a previous chart, the temperatures observed in 2021 were unique not in its record low temperatures but rather the duration in which the low temperatures persisted. The simulation results, though based on rough assumptions, does not seem exaggerated based on its assumed temperature data. 
 
 
 In summary, some evidence has provided that a real to the power grid could have been foreseen two weeks ahead of the power failure. This analysis has used data available at February 1 2021. 
@@ -597,44 +574,257 @@ In summary, some evidence has provided that a real to the power grid could have 
 
 ## Simulation of power generation: Experiments with Nuclear power generation. 
 
-As we have previously seen, the extent to which reductions in power output occurred, various greatly from power source to power source. Although several wind power critics released fiery remarks about the misfortune of wind power, it is now clear that wind were only partly to blame and that early estimates overestimated the reduction in wind output (Texas Tribune 2021).  The capacity factor of a power generation source describes the relation of potential power production (its nameplate value) and the actual average power output. Of all power sources. 
+As we have previously seen, the extent to which reductions in power output occurred, various greatly from power source to power source. Although several wind power critics released fiery remarks about the misfortune of wind power, it is now clear that wind were only partly to blame and that early estimates overestimated the reduction in wind output (Texas Tribune 2021).  The capacity factor of a power generation source describes the relation of potential power production (its nameplate value) and the actual average power output. Of all power sources, the EIA has calculated that nuclear power clearly has the highest capacity factor of all power sources in the United States in aggregate. Interestingly, the capacity factor of nuclear power generation far exceeds the most common power generation method present in Texas, namely natural gas. 
+
+As we have seen, nuclear power has the highest overall capacity factor in general, and it is also evident from analyzing the data from the 2021 Texas Energy crisis. One of the two reactors in the South Texas nuclear power plant went offline with its 1200 mWh nameplate capacity. The nuclear reactor itself operates mostly weather-independent, however it is common for nuclear reactors to draw cooling water from a nearby river, lake or even the ocean. Should significant freezing occur in the water source, the reactor may be forced to shut down. In the case of the South Texas power plant, its shutdown was caused by a failure in a cooling water pump located outside the power plant (Washington Examiner, 2021). 
 
 
-```{r, echo = TRUE, include=TRUE}
 
-#knitr::include_graphics("CapacityFactor2020.png")
 
-![EIA (2020) Capacity factors for various power sources based on data in the United States in 2020.](!CapacityFactor2020.png)
+```{r pressure, echo=FALSE, fig.cap="EIA (2020) Capacity factors for various power sources based on data in the United States in 2020.", out.width = '100%'}
+knitr::include_graphics("CapacityFactor2020.png")
+
+tibble(Nuclear = "92.5 %",
+       Geothermal = "74.3 %")
+
 
 ```
 
 
+
+
 ```{r, echo = TRUE, include=TRUE}
 
-garch_sim <- function(fit, df, fc_length = 20, start_date = "2021-02-01") {
-  #'
+simulation_period <- seq(ymd("2021-01-15"), length.out = 45, by = "day") # Simulation 
+
+garch_sim <- function(fit, df, days = 20, start_date = "2021-02-01") {
+  #' Performs a garch simulation based on arma orders retrived
+  #' from the input arima model
   #'@fit: fitted arima model
-  #'@fc_length: 
+  #'@df: Dataframe for fitting garch model
+  #'@days: Number of days included in the output garch simulation
+  #'@start_date: Starting date of the simulation. Appended to the output dataframe/tsibble
   arma_order <- fit[[1]][[1]]$fit$spec[1:3] %>% dplyr::select(p,q) %>% 
     t(.) %>% c(.)
   spec_ugarch = ugarchspec(
     mean.model <- list(armaOrder = arma_order,  include.mean = TRUE),
     variance.model= list(model="sGARCH", garchOrder=c(1,1)))
   
-  fit_ugarch = ugarchfit(data = df$mWh_generated, spec = spec_ugarch, out.sample = fc_length)
+  fit_ugarch = ugarchfit(data = df$mWh_generated, spec = spec_ugarch, out.sample = days)
   return(tsibble(mWh_generated = ugarchsim(fit_ugarch, 
-                                          n.sim = fc_length, 
+                                          n.sim = days, 
                                           n.start = 0, 
                                           startMethod = "sample", 
                                           m.sim = 1)@simulation$seriesSim,
-                date = seq(ymd(start_date), length.out = fc_length, by = "day")))
+                date = seq(ymd(start_date), length.out = days, by = "day")))
 }
 
 
 
 
+```
+
+As shown previously in this analysis, the coefficents and ARIMA orders can be used to simulate a time series, as shown using temperature data. 
+ARIMA models assumes constant variance throughout the data, an assumption which temperature data passes, at least to a certain extent.
+Modelling power generation in a period of turmoil however, such a model will be unfitting. For the power generation simulation, a GARCH model will be used. 
+These models are especially suited to model financial series and other time series where data may have conditional variance. Below is an example simulation of nuclear power generation. Note that the mean is around 5000 mWh, which is similar to the observed series in the period 2021-01-15:2021-03-01. The overall variance is quite small when compared to gas generation, as is the case with the observed data. 
+
+```{r, echo = TRUE, include=TRUE}
+
+sim_type <- function(generation_type, sim_period = simulation_period,
+                     days = 15, start_date = "2021-02-01",
+                     alteration_amount = 0) {
+  #' Function that performs that perfroms a garch simulation for a given
+  #' power generation type. Filters the correct generation type data from the generation_daily
+  #' dataframe, and composes a ARIMA model based on the data. The ARIMA model's coefficients and orders
+  #' are used as a mean model in the garch simulation.
+  #'@generation_type : string name of power generation type
+  #'@sim_period: sequence of dates which denotes the period of simulation
+  #'@days:  Number of days included in the output garch simulation
+  #'@start_date: Starting date of the simulation. Appended to the output dataframe/tsibble
+  type_df = generation_daily %>% 
+    filter(type == !!generation_type &
+             date %in% sim_period) %>% 
+    as_tsibble(index = date)
+  arima_fit = type_df %>% model(arima_fit = ARIMA(mWh_generated,
+                                                  stepwise = TRUE,
+                                                  approximation = TRUE))
+  
+  garch_simulation <- garch_sim(fit = arima_fit, 
+                                df = type_df, 
+                                days = days,
+                                start_date = start_date)   %>% 
+    mutate(mWh_generated = case_when((mWh_generated + alteration_amount) <= 0 ~ 0,
+          (mWh_generated + alteration_amount) >= 0 ~ mWh_generated + alteration_amount)) 
+
+  
+  return(garch_simulation)
+  
+
+}
+
+set.seed(12)
+sim_type("nuclear") %>% 
+  ggplot(aes(x = date, y = mWh_generated)) +
+  geom_line() +
+  scale_colour_manual(values = color_scheme) +
+  labs(title = "Example generated nuclear series",
+       subtitle = "Garch model based on observed 2021 data",
+       x = "Date", y = "Degrees celsius") +
+  theme_bw() 
+
 
 ```
+
+
+
+
+
+The viewer will find below a function which perfoms a simulation by of all sources and appends this to a dataframe. This simulation data serves the purpose of "what could have happened", and like the previous demand simulation it may provide som insight into how changing the power generation composition can avoid rolling blackouts or complete grid failure. 
+
+```{r, echo = TRUE, include=TRUE}
+sim_all_sources <- function(sim_period = simulation_period,
+                            days = 15, start_date = "2021-02-01",
+                            subtract_from = "gas", replace = FALSE,
+                            alteration_amount = 5000,
+                            added_nuclear = 0) {
+  #' Function that cycles through all power generation typs present
+  #' in the generation_daily dataframe and populates a dataframe
+  #' with the garch simulation data.
+  #' @sim_period: Simulation period
+  #' @days:  Number of days included in the output garch simulation
+  #' @start_date : Starting date of the simulation. Appended to the output dataframe/tsibble
+  generation_types <- generation_daily %>%  
+    filter(type != "total") %>% 
+    group_by(type) %>% 
+    summarise(type = type) %>% unique() 
+  generation_types <-  generation_types$type %>% c(.)
+  
+  simulation_output = NULL 
+
+  for (generation_type in generation_types) {
+    if ((generation_type == subtract_from) && replace) {
+      simulation_output %<>% bind_rows(simulation_output,
+        tibble(date = seq(ymd(start_date), length.out = days, by = "day"),
+               mWh_generated  = sim_type(
+                 generation_type = generation_type, 
+                 sim_period = sim_period, days = days, 
+                 start_date = start_date,
+                 alteration_amount = -alteration_amount)$mWh_generated,
+               type = generation_type)
+      )
+    }
+    else if (generation_type == "nuclear" && replace) {
+      simulation_output %<>% bind_rows(simulation_output,
+                                       tibble(date = seq(ymd(start_date), length.out = days, by = "day"),
+                                              mWh_generated  = sim_type(
+                                                generation_type = generation_type, 
+                                                sim_period = sim_period,
+                                                days = days, start_date = start_date,
+                                                alteration_amount = alteration_amount)$mWh_generated + added_nuclear,
+                                              type = generation_type)
+      )
+    }
+    else {
+      simulation_output %<>% bind_rows(simulation_output,
+                                       tibble(date = seq(ymd(start_date), length.out = days, by = "day"),
+                                              mWh_generated  = sim_type(
+                                                generation_type = generation_type, 
+                                                sim_period = sim_period, 
+                                                days = days, 
+                                                start_date = start_date,
+                                                alteration_amount = 0)$mWh_generated,
+                                              type = generation_type)
+      )
+    }
+    
+  }
+  return (simulation_output %>% unique())
+  
+}
+```
+
+To find explore the probability of grid failure, a cutoff point is needed.ERCOT implemented rolling power blackouts at February 14th when power, at that point the deviation between power demand and generation was at 1190 mWh, as shown in the table below. Should total power demand surpass power generation with this amount, it is reasonable to assume that a rolling blackout will have to be implemented, a scenario which we seek to avoid by changing power generation composition. 
+
+```{r, echo = TRUE, include=TRUE}
+
+max_deviation <- demand_data_daily %>% 
+  left_join(generation_daily %>% filter(type == "total"), by = "date") %>% 
+  filter(year(date) == 2021 & month(date) == 2) %>% 
+  filter(!is.na(mWh_generated))
+
+observed_maximum_deviation <- tibble(max = max(max_deviation$mWh_demand_daily - max_deviation$mWh_generated),
+                                     max_date = max_deviation[which.max(max_deviation$mWh_demand_daily - max_deviation$mWh_generated), ]$date)
+
+observed_maximum_deviation %>% 
+  rename("Maximum deviation" = max, 
+         "Date" = max_date) %>% 
+  kbl(caption = "Maximum deviation between power demand and power generation)") %>%
+  kable_classic(full_width = F, html_font = "Times new roman") 
+  
+```
+
+
+In order to simulate the changing of the power generation composition, two scenarios in particular are interesting: 
+1. Reducing the mWh output of unstable (low capacity factor) power generation source, and increasing a stable (high capacity factor) generation source
+2. Increasing a stable power generation source 
+
+```{r, echo = TRUE, include=TRUE, message = FALSE}
+
+power_simulation <- function(sim_nr, sim_period = simulation_period, days  = 19, replace = FALSE, 
+                             subtract_from = "gas", alteration_amount = 5000, 
+                             start_date = "2021-02-01") {
+  #'@sim_nr: Number of simulations to be run
+  #' @sim_period: Simulation period
+  #' @days:  Number of days included in the output garch simulation
+  #' @start_date : Starting date of the simulation. Appended to the output dataframe/tsibble
+  power_exceeded <- data.frame("run_nr" = seq(1, sim_nr), 
+                                exceed = FALSE,
+                                max_deviation = 0)
+  
+  for(i in 1:sim_nr) {
+    simulation_all_output = sim_all_sources(days = days, replace = replace, subtract_from = subtract_from, 
+                                            alteration_amount = alteration_amount, 
+                                            added_nuclear = added_nuclear) 
+    colnames(simulation_all_output) <- c("date", "mWh_generated", "type")
+    
+    total_simulation_output = simulation_all_output %>% 
+      group_by(date) %>% 
+      summarise(total = sum(mWh_generated)) %>% 
+      left_join(demand_data_daily, by = "date")
+    
+    
+    max_dev <- max(total_simulation_output$mWh_demand_daily - 
+                     total_simulation_output$total)  # Calculate deviation between demand and generation
+    power_exceeded[i, "max_deviation"] <- max_dev
+    
+    
+    if (max_dev >= observed_maximum_deviation$max)   power_exceeded[i, "exceed"] <- TRUE
+ 
+  }
+  return(power_exceeded)
+}
+
+
+power_gen_exceeds <- power_simulation(1)
+```
+A 100 simulation runs is conducted, as a 1000 runs are computationally expensive. 
+
+```{r, echo = TRUE, include=TRUE, message = FALSE}
+power_simulation(5) %>% 
+  summarise(count = sum(exceed, na.rm = TRUE), 
+            percentage = paste((count/n())*100, "%"),
+            mean  = mean(max_deviation),
+            max   = max(max_deviation)) %>% 
+  kbl(caption = "Simulated total power generation ", align = "c") %>%
+  kable_paper(full_width = F) %>%
+  footnote(general  = "Based on 100 simulations") %>% 
+  kable_classic(full_width = F, html_font = "Times new roman")
+
+```
+
+## Conclusion
+
 
 
 

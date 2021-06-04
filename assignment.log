@@ -1,4 +1,4 @@
-This is pdfTeX, Version 3.141592653-2.6-1.40.22 (TeX Live 2021/W32TeX) (preloaded format=pdflatex 2021.4.11)  4 JUN 2021 11:08
+This is pdfTeX, Version 3.141592653-2.6-1.40.22 (TeX Live 2021/W32TeX) (preloaded format=pdflatex 2021.4.11)  4 JUN 2021 12:15
 entering extended mode
  restricted \write18 enabled.
  %&-line parsing enabled.
@@ -704,131 +704,132 @@ LaTeX Font Info:    External font `lmex10' loaded for size
 as been already used, duplicate ignored
 <argument> ...shipout:D \box_use:N \l_shipout_box 
                                                   
-l.277 \end{Shaded}
+l.285 \end{Shaded}
                   pdfTeX warning (ext4): destination with the same identifier (
 name{table.2}) has been already used, duplicate ignored
 <argument> ...shipout:D \box_use:N \l_shipout_box 
                                                   
-l.277 \end{Shaded}
+l.285 \end{Shaded}
                   ]
-Overfull \hbox (1025.74658pt too wide) in paragraph at lines 283--290
+Overfull \hbox (230.16751pt too wide) in paragraph at lines 291--298
  [][] 
  []
-
-LaTeX Font Info:    Font shape `T1/lmtt/bx/n' in size <12> not available
-(Font)              Font shape `T1/lmtt/b/n' tried instead on input line 301.
-
-LaTeX Font Warning: Font shape `T1/lmtt/bx/it' in size <12> not available
-(Font)              Font shape `T1/lmtt/b/sl' tried instead on input line 301.
 
 [3pdfTeX warning (ext4): destination with the same identifier (name{table.3}) h
 as been already used, duplicate ignored
 <argument> ...shipout:D \box_use:N \l_shipout_box 
                                                   
-l.319 \end{Shaded}
-                  ]
-<assignment_files/figure-latex/unnamed-chunk-4-1.pdf, id=42, 469.755pt x 325.21
+l.309 \begin{Shaded}
+                    ]
+LaTeX Font Info:    Font shape `T1/lmtt/bx/n' in size <12> not available
+(Font)              Font shape `T1/lmtt/b/n' tried instead on input line 311.
+
+LaTeX Font Warning: Font shape `T1/lmtt/bx/it' in size <12> not available
+(Font)              Font shape `T1/lmtt/b/sl' tried instead on input line 311.
+
+<assignment_files/figure-latex/unnamed-chunk-4-1.pdf, id=49, 469.755pt x 325.21
 5pt>
 File: assignment_files/figure-latex/unnamed-chunk-4-1.pdf Graphic file (type pd
 f)
 <use assignment_files/figure-latex/unnamed-chunk-4-1.pdf>
 Package pdftex.def Info: assignment_files/figure-latex/unnamed-chunk-4-1.pdf  u
-sed on input line 321.
+sed on input line 347.
 (pdftex.def)             Requested size: 469.75386pt x 325.2142pt.
-
-Underfull \hbox (badness 3547) in paragraph at lines 321--325
-[][] \T1/lmr/m/n/12 We can
- []
-
-[4 <./assignment_files/figure-latex/unnamed-chunk-4-1.pdf>]
-<assignment_files/figure-latex/unnamed-chunk-5-1.pdf, id=52, 469.755pt x 325.21
+[4]
+<assignment_files/figure-latex/unnamed-chunk-5-1.pdf, id=55, 469.755pt x 325.21
 5pt>
 File: assignment_files/figure-latex/unnamed-chunk-5-1.pdf Graphic file (type pd
 f)
 <use assignment_files/figure-latex/unnamed-chunk-5-1.pdf>
 Package pdftex.def Info: assignment_files/figure-latex/unnamed-chunk-5-1.pdf  u
-sed on input line 364.
+sed on input line 375.
 (pdftex.def)             Requested size: 469.75386pt x 325.2142pt.
-[5 <./assignment_files/figure-latex/unnamed-chunk-5-1.pdf>]
-<assignment_files/figure-latex/unnamed-chunk-6-1.pdf, id=62, 469.755pt x 325.21
+[5 <./assignment_files/figure-latex/unnamed-chunk-4-1.pdf>]
+<assignment_files/figure-latex/unnamed-chunk-6-1.pdf, id=65, 469.755pt x 325.21
 5pt>
 File: assignment_files/figure-latex/unnamed-chunk-6-1.pdf Graphic file (type pd
 f)
 <use assignment_files/figure-latex/unnamed-chunk-6-1.pdf>
 Package pdftex.def Info: assignment_files/figure-latex/unnamed-chunk-6-1.pdf  u
-sed on input line 392.
+sed on input line 410.
 (pdftex.def)             Requested size: 469.75386pt x 325.2142pt.
-[6 <./assignment_files/figure-latex/unnamed-chunk-6-1.pdf>]
-<assignment_files/figure-latex/unnamed-chunk-7-1.pdf, id=72, 469.755pt x 325.21
-5pt>
-File: assignment_files/figure-latex/unnamed-chunk-7-1.pdf Graphic file (type pd
-f)
-<use assignment_files/figure-latex/unnamed-chunk-7-1.pdf>
-Package pdftex.def Info: assignment_files/figure-latex/unnamed-chunk-7-1.pdf  u
-sed on input line 427.
-(pdftex.def)             Requested size: 469.75386pt x 325.2142pt.
-[7 <./assignment_files/figure-latex/unnamed-chunk-7-1.pdf>]
-Overfull \hbox (38.42528pt too wide) in paragraph at lines 463--463
+[6 <./assignment_files/figure-latex/unnamed-chunk-5-1.pdf>]
+Overfull \hbox (38.42528pt too wide) in paragraph at lines 446--446
 []\T1/lmtt/m/n/12 ## `summarise()` has grouped output by 'month'. You can overr
 ide using the `.groups` argument.[] 
  []
 
-<assignment_files/figure-latex/unnamed-chunk-8-1.pdf, id=83, 867.24pt x 505.89p
+<assignment_files/figure-latex/unnamed-chunk-7-1.pdf, id=75, 867.24pt x 505.89p
 t>
-File: assignment_files/figure-latex/unnamed-chunk-8-1.pdf Graphic file (type pd
+File: assignment_files/figure-latex/unnamed-chunk-7-1.pdf Graphic file (type pd
 f)
-<use assignment_files/figure-latex/unnamed-chunk-8-1.pdf>
-Package pdftex.def Info: assignment_files/figure-latex/unnamed-chunk-8-1.pdf  u
-sed on input line 465.
+<use assignment_files/figure-latex/unnamed-chunk-7-1.pdf>
+Package pdftex.def Info: assignment_files/figure-latex/unnamed-chunk-7-1.pdf  u
+sed on input line 448.
 (pdftex.def)             Requested size: 542.05014pt x 316.19589pt.
 
-Overfull \hbox (17.64995pt too wide) in paragraph at lines 465--466
+Overfull \hbox (17.64995pt too wide) in paragraph at lines 448--449
 [][] 
  []
 
-[8 <./assignment_files/figure-latex/unnamed-chunk-8-1.pdf>] [9]
-<assignment_files/figure-latex/unnamed-chunk-10-1.pdf, id=98, 469.755pt x 325.2
-15pt>
-File: assignment_files/figure-latex/unnamed-chunk-10-1.pdf Graphic file (type p
-df)
-<use assignment_files/figure-latex/unnamed-chunk-10-1.pdf>
-Package pdftex.def Info: assignment_files/figure-latex/unnamed-chunk-10-1.pdf  
-used on input line 583.
-(pdftex.def)             Requested size: 469.75386pt x 325.2142pt.
-[10pdfTeX warning (ext4): destination with the same identifier (name{table.4}) 
-has been already used, duplicate ignored
+[7 <./assignment_files/figure-latex/unnamed-chunk-6-1.pdf>] [8 <./assignment_fi
+les/figure-latex/unnamed-chunk-7-1.pdf>] [9pdfTeX warning (ext4): destination w
+ith the same identifier (name{table.4}) has been already used, duplicate ignore
+d
 <argument> ...shipout:D \box_use:N \l_shipout_box 
                                                   
-l.610 \begin{Shaded}
-                     <./assignment_files/figure-latex/unnamed-chunk-10-1.pdf>]
+l.564 \end{Shaded}
+                  ]
+<assignment_files/figure-latex/unnamed-chunk-9-1.pdf, id=101, 469.755pt x 325.2
+15pt>
+File: assignment_files/figure-latex/unnamed-chunk-9-1.pdf Graphic file (type pd
+f)
+<use assignment_files/figure-latex/unnamed-chunk-9-1.pdf>
+Package pdftex.def Info: assignment_files/figure-latex/unnamed-chunk-9-1.pdf  u
+sed on input line 566.
+(pdftex.def)             Requested size: 469.75386pt x 325.2142pt.
 LaTeX Font Info:    Trying to load font information for TS1+lmtt on input line 
-618.
+601.
 (c:/Users/sondr/AppData/Roaming/TinyTeX/texmf-dist/tex/latex/lm/ts1lmtt.fd
 File: ts1lmtt.fd 2015/05/01 v1.6.1 Font defs for Latin Modern
-)
-Overfull \vbox (1.41911pt too high) detected at line 677
+) [10 <./assignment_files/figure-latex/unnamed-chunk-9-1.pdf>]
+Underfull \vbox (badness 10000) detected at line 660
+ []
+
+
+Underfull \vbox (badness 10000) detected at line 660
  []
 
 [11]
-<assignment_files/figure-latex/unnamed-chunk-12-1.pdf, id=115, 469.755pt x 325.
+<assignment_files/figure-latex/unnamed-chunk-11-1.pdf, id=117, 469.755pt x 325.
+215pt>
+File: assignment_files/figure-latex/unnamed-chunk-11-1.pdf Graphic file (type p
+df)
+<use assignment_files/figure-latex/unnamed-chunk-11-1.pdf>
+Package pdftex.def Info: assignment_files/figure-latex/unnamed-chunk-11-1.pdf  
+used on input line 662.
+(pdftex.def)             Requested size: 469.75386pt x 325.2142pt.
+[12 <./assignment_files/figure-latex/unnamed-chunk-11-1.pdf>]
+<assignment_files/figure-latex/unnamed-chunk-12-1.pdf, id=127, 469.755pt x 325.
 215pt>
 File: assignment_files/figure-latex/unnamed-chunk-12-1.pdf Graphic file (type p
 df)
 <use assignment_files/figure-latex/unnamed-chunk-12-1.pdf>
 Package pdftex.def Info: assignment_files/figure-latex/unnamed-chunk-12-1.pdf  
-used on input line 679.
+used on input line 708.
 (pdftex.def)             Requested size: 469.75386pt x 325.2142pt.
-[12 <./assignment_files/figure-latex/unnamed-chunk-12-1.pdf>]
-<assignment_files/figure-latex/unnamed-chunk-13-1.pdf, id=125, 469.755pt x 325.
-215pt>
-File: assignment_files/figure-latex/unnamed-chunk-13-1.pdf Graphic file (type p
-df)
-<use assignment_files/figure-latex/unnamed-chunk-13-1.pdf>
-Package pdftex.def Info: assignment_files/figure-latex/unnamed-chunk-13-1.pdf  
-used on input line 725.
-(pdftex.def)             Requested size: 469.75386pt x 325.2142pt.
-[13 <./assignment_files/figure-latex/unnamed-chunk-13-1.pdf>]
-Overfull \hbox (54.93964pt too wide) in paragraph at lines 774--783
+[13 <./assignment_files/figure-latex/unnamed-chunk-12-1.pdf>]
+Overfull \hbox (2107.0513pt too wide) in paragraph at lines 767--767
+[]\T1/lmtt/m/n/12 ## [1] "demand_exceeded <- data.frame(\"run_nr\" = seq(1, 100
+0), \n                              exceed = FALSE,\n                          
+    max_demand = 0)\nfor(i in 1:1000) {\n  fc_sim = forecast_sim(ts = demand_te
+mp_2021, fit = fit_arima_temperature )\n  \n  max_demand = max(fc_sim$.mean)\n 
+ demand_exceeded[i, \"max_demand\"] <- max_demand\n  if (max_demand > max_gener
+ation)  demand_exceeded[i, \"exceed\"] <- TRUE\n}\n"[] 
+ []
+
+
+Overfull \hbox (54.93964pt too wide) in paragraph at lines 792--801
  [][] 
  []
 
@@ -836,24 +837,50 @@ Overfull \hbox (54.93964pt too wide) in paragraph at lines 774--783
 has been already used, duplicate ignored
 <argument> ...shipout:D \box_use:N \l_shipout_box 
                                                   
-l.804 
-      ] [15] (./assignment.aux)
+l.814 
+      ]
+<CapacityFactor2020.png, id=145, 617.30624pt x 347.79938pt>
+File: CapacityFactor2020.png Graphic file (type png)
+<use CapacityFactor2020.png>
+Package pdftex.def Info: CapacityFactor2020.png  used on input line 859.
+(pdftex.def)             Requested size: 542.0726pt x 305.41164pt.
+[15pdfTeX warning (ext4): destination with the same identifier (name{table.6}) 
+has been already used, duplicate ignored
+<argument> ...shipout:D \box_use:N \l_shipout_box 
+                                                  
+l.895 \end{Shaded}
+                  ] [16pdfTeX warning (ext4): destination with the same identif
+ier (name{figure.1}) has been already used, duplicate ignored
+<argument> ...shipout:D \box_use:N \l_shipout_box 
+                                                  
+l.909 
+       <./CapacityFactor2020.png>]
+<assignment_files/figure-latex/unnamed-chunk-16-1.pdf, id=160, 469.755pt x 325.
+215pt>
+File: assignment_files/figure-latex/unnamed-chunk-16-1.pdf Graphic file (type p
+df)
+<use assignment_files/figure-latex/unnamed-chunk-16-1.pdf>
+Package pdftex.def Info: assignment_files/figure-latex/unnamed-chunk-16-1.pdf  
+used on input line 966.
+(pdftex.def)             Requested size: 469.75386pt x 325.2142pt.
+[17] [18 <./assignment_files/figure-latex/unnamed-chunk-16-1.pdf>] (./assignmen
+t.aux)
 
 LaTeX Warning: There were multiply-defined labels.
 
 Package rerunfilecheck Info: File `assignment.out' has not changed.
-(rerunfilecheck)             Checksum: A94799F469786C424EF52A2C4EA16D11;581.
+(rerunfilecheck)             Checksum: 8B4BA1C09DAD9348A6299FFF0010F0AE;1133.
  ) 
 Here is how much of TeX's memory you used:
- 12314 strings out of 480954
- 181153 string characters out of 5905840
- 496298 words of memory out of 5000000
- 29265 multiletter control sequences out of 15000+600000
- 457996 words of font info for 74 fonts, out of 8000000 for 9000
+ 12340 strings out of 480954
+ 181655 string characters out of 5905840
+ 498871 words of memory out of 5000000
+ 29280 multiletter control sequences out of 15000+600000
+ 458302 words of font info for 75 fonts, out of 8000000 for 9000
  14 hyphenation exceptions out of 8191
- 71i,11n,74p,392b,367s stack positions out of 5000i,500n,10000p,200000b,80000s
-{c:/Users/sondr/AppData/Roaming/TinyTeX/texmf-dist/fonts/enc/dvips/lm/lm-ec.e
-nc}{c:/Users/sondr/AppData/Roaming/TinyTeX/texmf-dist/fonts/enc/dvips/lm/lm-ts1
+ 71i,11n,74p,494b,367s stack positions out of 5000i,500n,10000p,200000b,80000s
+{c:/Users/sondr/AppData/Roaming/TinyTeX/texmf-dist/fonts/enc/dvips/lm/lm-ts1.
+enc}{c:/Users/sondr/AppData/Roaming/TinyTeX/texmf-dist/fonts/enc/dvips/lm/lm-ec
 .enc}<c:/Users/sondr/AppData/Roaming/TinyTeX/texmf-dist/fonts/type1/public/lm/l
 mbx10.pfb><c:/Users/sondr/AppData/Roaming/TinyTeX/texmf-dist/fonts/type1/public
 /lm/lmbx12.pfb><c:/Users/sondr/AppData/Roaming/TinyTeX/texmf-dist/fonts/type1/p
@@ -865,10 +892,10 @@ ist/fonts/type1/public/lm/lmtk10.pfb><c:/Users/sondr/AppData/Roaming/TinyTeX/te
 xmf-dist/fonts/type1/public/lm/lmtko10.pfb><c:/Users/sondr/AppData/Roaming/Tiny
 TeX/texmf-dist/fonts/type1/public/lm/lmtt12.pfb><c:/Users/sondr/AppData/Roaming
 /TinyTeX/texmf-dist/fonts/type1/public/lm/lmtti10.pfb>
-Output written on assignment.pdf (15 pages, 321278 bytes).
+Output written on assignment.pdf (18 pages, 511065 bytes).
 PDF statistics:
- 192 PDF objects out of 1000 (max. 8388607)
- 146 compressed objects within 2 object streams
- 27 named destinations out of 1000 (max. 500000)
- 65 words of extra memory for PDF output out of 10000 (max. 10000000)
+ 224 PDF objects out of 1000 (max. 8388607)
+ 173 compressed objects within 2 object streams
+ 36 named destinations out of 1000 (max. 500000)
+ 86 words of extra memory for PDF output out of 10000 (max. 10000000)
 

@@ -245,7 +245,7 @@ garch_sim <- function(fit, df, fc_length = 20, start_date = "2021-02-01") {
 
 
 ## Nuclear sim
-garch_sim(fit_nuclear_arima, nuclear_data %>% mutate(mWh_generated = mWh_generated + 1300)) %>% 
+garch_sim(fit_nuclear_arima, nuclear_data) %>% 
   autoplot()
 
 
@@ -305,7 +305,12 @@ sim_all_sources <- function(sim_period = simulation_period,
                             subtract_from = "gas", replace = FALSE,
                             alteration_amount = 5000,
                             added_nuclear = 0) {
-  #' 
+  #' Function that cycles through all power generation typs present
+  #' in the generation_daily dataframe and populates a dataframe
+  #' with the garch simulation data.
+  #' @sim_period: simulation period
+  #' @fc_length: forecast duration/steps ahead
+  #' @start_date : starting date of simulation
   generation_types <- generation_daily %>%  
     filter(type != "total") %>% 
     group_by(type) %>% 
